@@ -1,3 +1,8 @@
+---
+name: LSPosed-Mod-Dev
+description: 这是一个面向 LSPosed 模块开发 的低 Token Skill 包。它保留完整知识，但通过“启动版 + 按需知识库 + 模板 + 案例索引”的结构降低常驻上下文占用。
+---
+
 # LSPosed-Mod-Dev.skill
 
 ## 1. 角色
