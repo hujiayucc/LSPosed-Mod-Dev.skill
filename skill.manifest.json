@@ -107,6 +107,20 @@
       ]
     },
     {
+      "path": "guides/advanced-combinations.md",
+      "type": "user_guide",
+      "load_policy": "retrieve_on_complex_scenario",
+      "priority": 82,
+      "tags": [
+        "multi-process",
+        "classloader",
+        "remote-preferences",
+        "hot-reload",
+        "native-hook",
+        "architecture"
+      ]
+    },
+    {
       "path": "cases/real-project-patterns.md",
       "type": "case_index",
       "load_policy": "retrieve_on_architecture_or_troubleshooting",
@@ -162,6 +176,14 @@
       "read": [
         "guides/interaction-examples.md",
         "guides/quick-start.md"
+      ]
+    },
+    {
+      "intent": "complex_scenario_combination",
+      "read": [
+        "guides/advanced-combinations.md",
+        "templates/java-api102.md 或 templates/kotlin-api102.md",
+        "LSPosed-Mod-Dev.full.knowledge.md#相关章节"
       ]
     },
     {

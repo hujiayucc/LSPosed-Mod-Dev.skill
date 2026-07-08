@@ -49,6 +49,7 @@ https://github.com/libxposed/helper
 | `guides/faq-anti-patterns.md` | FAQ、常见反模式和边界请求改写 | 高频问题、质量判断或安全改写时读取 |
 | `guides/troubleshooting-cards.md` | 模块不生效、崩溃和高频失败的一页式排错卡片 | 排错时优先读取 |
 | `guides/interaction-examples.md` | 典型输入到推荐回答的样例、边界反馈和信息不足反馈结构 | 不确定回答结构或需要示例时读取 |
+| `guides/advanced-combinations.md` | 多进程、延迟 ClassLoader、Remote Preferences、Hot Reload、Native Hook 等复杂组合场景 | 复杂需求拆解或架构审查时读取 |
 | `cases/real-project-patterns.md` | 真实项目架构与质量案例索引 | 架构设计、排错、审查时读取 |
 | `cases/migration-compat.md` | 旧 API 迁移与兼容案例索引 | 迁移旧模块时读取 |
 | `skill.manifest.json` | 机器可读加载清单 | 项目集成或自动化导入时读取 |
@@ -72,6 +73,7 @@ SKILL.md
 ```text
 LSPosed-Mod-Dev.full.knowledge.md
 templates/
+guides/
 cases/
 ```
 
@@ -100,6 +102,7 @@ cases/
 | 模块不生效 | `guides/troubleshooting-cards.md` + 完整知识库排错章节 + `cases/real-project-patterns.md` |
 | 高频问题 / 反模式判断 | `guides/faq-anti-patterns.md` |
 | 需要交互样例或回答结构 | `guides/interaction-examples.md` |
+| 复杂场景组合 | `guides/advanced-combinations.md` + 对应模板或完整知识库章节 |
 | 架构审查 | `cases/real-project-patterns.md` + 完整知识库质量审查章节 |
 
 ## Token 策略

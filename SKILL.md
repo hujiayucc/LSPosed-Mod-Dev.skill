@@ -191,6 +191,13 @@ guides/
 
 - 指南：`guides/interaction-examples.md`，用于输入问题到推荐回答、边界请求和信息不足场景的结构化反馈。
 
+### 5.10 复杂场景组合
+
+读取：
+
+- 指南：`guides/advanced-combinations.md`，用于多进程 Hook、延迟 ClassLoader、Remote Preferences 联动、Hot Reload 状态保护、Native + Java 混合模块和架构审查拆解；
+- 再按具体能力读取模板、案例或完整知识库章节。
+
 ---
 
 ## 6. 章节索引
