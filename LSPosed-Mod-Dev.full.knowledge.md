@@ -1369,7 +1369,7 @@ if (service.apiVersion >= 102) {
 
 ### 28.1 基础认知
 
-Native Hook 用于 Hook native 函数。
+Native Hook 用于 Hook native 函数。它的风险明显高于普通 Java Hook，默认不要为普通需求生成 Native Hook。
 
 要求：
 
@@ -1377,7 +1377,8 @@ Native Hook 用于 Hook native 函数。
 - 用户懂 C/C++；
 - 用户懂 so 加载；
 - 用户懂 JNI；
-- 用户能处理 native crash。
+- 用户能处理 native crash；
+- 用户能验证目标进程 ABI 和符号是否存在。
 
 ### 28.2 native_init
 
@@ -1392,10 +1393,12 @@ NativeOnModuleLoaded native_init(const NativeAPIEntries *entries);
 
 - 函数名必须是 `native_init`；
 - 必须导出；
-- 使用 `extern "C"`；
+- 使用 `extern "C"`，避免 C++ name mangling；
 - 使用 `[[gnu::visibility("default")]]`；
 - 使用 `[[gnu::used]]`；
-- 不要修改 `NativeAPIEntries`。
+- 不要修改 `NativeAPIEntries`；
+- 可在 `native_init` 中 Hook 已加载的系统库函数；
+- 目标 App 后续 `dlopen()` 的 so，应在返回的 `NativeOnModuleLoaded` callback 中按库名判断后再 Hook。
 
 ### 28.3 NativeAPIEntries
 
@@ -1413,6 +1416,7 @@ typedef struct {
 
 说明：
 
+- `version` 用于兼容判断，不要假设未来字段一定存在；
 - `hook_func` 用于 Hook native 函数；
 - `unhook_func` 用于取消 Hook；
 - `native_init` 返回一个回调；
@@ -1420,7 +1424,82 @@ typedef struct {
 - 回调参数 `name` 是 so 路径；
 - 回调参数 `handle` 可用于 `dlsym()`。
 
-### 28.4 native_init.list
+使用要求：
+
+- 必须检查 `entries`、`entries->hook_func`、`entries->unhook_func` 是否可用；
+- 必须检查 `dlsym()` 返回值，找不到符号时记录并跳过；
+- 必须检查 `hook_func(...)` 返回值；
+- 必须保存 backup 指针，替换函数中需要调用原函数时使用 backup；
+- 必须防止重复 Hook 同一函数；
+- 目标符号可能被 strip、隐藏、inline 或版本变动。
+
+### 28.4 最小 C++ 示例
+
+```cpp
+#include <dlfcn.h>
+#include <stdint.h>
+#include <string.h>
+
+typedef int (*HookFunType)(void *func, void *replace, void **backup);
+typedef int (*UnhookFunType)(void *func);
+typedef void (*NativeOnModuleLoaded)(const char *name, void *handle);
+
+typedef struct {
+    uint32_t version;
+    HookFunType hook_func;
+    UnhookFunType unhook_func;
+} NativeAPIEntries;
+
+static HookFunType hook_func = nullptr;
+static int (*backup_target_func)(int value) = nullptr;
+static bool target_hooked = false;
+
+static int replacement_target_func(int value) {
+    if (backup_target_func == nullptr) {
+        return value;
+    }
+    return backup_target_func(value) + 1;
+}
+
+static void on_library_loaded(const char *name, void *handle) {
+    if (name == nullptr || handle == nullptr || hook_func == nullptr || target_hooked) {
+        return;
+    }
+    if (strstr(name, "libtarget.so") == nullptr) {
+        return;
+    }
+
+    void *symbol = dlsym(handle, "target_func");
+    if (symbol == nullptr) {
+        return;
+    }
+
+    if (hook_func(symbol, reinterpret_cast<void *>(replacement_target_func),
+                  reinterpret_cast<void **>(&backup_target_func)) == 0) {
+        target_hooked = true;
+    }
+}
+
+extern "C" [[gnu::visibility("default")]] [[gnu::used]]
+NativeOnModuleLoaded native_init(const NativeAPIEntries *entries) {
+    if (entries == nullptr || entries->hook_func == nullptr) {
+        return nullptr;
+    }
+    hook_func = entries->hook_func;
+    return on_library_loaded;
+}
+```
+
+生成真实代码时必须替换：
+
+- 目标 so 名称；
+- 目标 native 函数名；
+- 目标函数签名；
+- replacement 函数返回值和参数；
+- 重复 Hook 保护策略；
+- 日志和错误处理方式。
+
+### 28.5 native_init.list
 
 现代 API 应使用：
 
@@ -1438,9 +1517,38 @@ libexample.so
 
 - Wiki 中旧示例可能写 `assets/native_init`；
 - 现代 API 应优先使用 `META-INF/xposed/native_init.list`；
-- 加载 native 库仍需在合适时机 `System.loadLibrary()`。
+- 每行写模块 APK 内包含 `native_init` 的 so 名称；
+- 加载 native 库仍需在合适时机 `System.loadLibrary()`；
+- 通常应在 Java/Kotlin 入口完成包名、进程和风险判断后再加载 native 库；
+- 不要在无关进程加载 native 库。
 
-### 28.5 JNI_OnLoad
+Java/Kotlin 入口加载示例：
+
+```kotlin
+if (param.packageName == TARGET_PACKAGE && param.processName == TARGET_PROCESS) {
+    try {
+        System.loadLibrary("example")
+        log(Log.INFO, TAG, "event=native_library_loaded name=example")
+    } catch (t: Throwable) {
+        log(Log.ERROR, TAG, "event=native_library_load_failed", t)
+    }
+}
+```
+
+### 28.6 ABI 与打包检查
+
+Native Hook 发布前必须检查：
+
+- APK 内存在 `META-INF/xposed/native_init.list`；
+- APK 内存在 `lib/<abi>/libexample.so`；
+- 目标进程是 32 位还是 64 位；
+- APK 是否提供目标进程需要的 ABI；
+- Gradle `abiFilters` 是否误删目标 ABI；
+- `native_init.list` 中的 so 名称是否与 APK 内文件名一致；
+- release 构建是否 strip 了模块自身必须导出的 `native_init`；
+- 目标符号在目标版本中是否存在。
+
+### 28.7 JNI_OnLoad
 
 如果需要 JNIEnv：
 
@@ -1455,10 +1563,33 @@ jint JNI_OnLoad(JavaVM *jvm, void*) {
 
 注意：
 
+- `JNIEnv *` 是线程相关对象，不应跨线程缓存；
+- 需要跨线程使用 JNI 时，应缓存 `JavaVM *`，并在线程内重新获取 `JNIEnv *`；
+- Hook `JNIEnv` 函数表属于高风险路径；
 - native 热重载不会自动调用 `JNI_OnUnload`；
 - 不保证 `dlclose`；
 - 旧 native 线程、回调、JNI 全局引用未清理会造成崩溃；
 - 热重载前必须清理 native 状态。
+
+### 28.8 Native Hook 排错
+
+检查顺序：
+
+1. 是否真的需要 Native Hook，能否改用 Java Hook；
+2. `native_init.list` 是否打进 APK；
+3. so 是否存在于目标 ABI 路径；
+4. `System.loadLibrary()` 是否在目标包和目标进程中执行；
+5. `native_init` 是否导出且未被裁剪；
+6. `entries->hook_func` 是否为空；
+7. callback 是否被目标 so 加载触发；
+8. `name` 是否匹配目标 so；
+9. `dlsym()` 是否找到目标符号；
+10. `hook_func(...)` 返回值是否成功；
+11. replacement 签名是否与目标函数完全一致；
+12. backup 是否正确保存并调用；
+13. 是否重复 Hook；
+14. 是否有 native crash 日志和 tombstone；
+15. 是否涉及 Hot Reload 未清理 native 状态。
 
 ---
 

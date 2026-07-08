@@ -121,4 +121,11 @@ META-INF/xposed/java_init.list
 META-INF/xposed/scope.list
 ```
 
-如果缺失，模块不会正常加载或 scope 不生效。
+Native Hook 场景还应检查：
+
+```text
+META-INF/xposed/native_init.list
+lib/<abi>/libexample.so
+```
+
+如果缺失，模块不会正常加载、scope 不生效，或 native 入口不会被框架识别。
