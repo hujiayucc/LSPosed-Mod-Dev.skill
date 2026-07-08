@@ -1,6 +1,6 @@
 # 复杂场景组合指引
 
-这个文件用于指导复杂 LSPosed 模块任务如何组合模板、案例和完整知识库。它不替代具体代码模板，只说明遇到多维需求时先读什么、怎么拆分、哪些风险必须先处理。
+这个文件用于指导复杂 LSPosed 模块任务如何组合模板、案例和 `knowledge/` 分片。它不替代具体代码模板，只说明遇到多维需求时先读什么、怎么拆分、哪些风险必须先处理。
 
 ## 组合原则
 
@@ -16,8 +16,8 @@
 
 推荐读取：
 
-- Java/Kotlin API 102 模板；
-- 完整知识库生命周期、进程判断、Hook 模型章节；
+- `knowledge/01-project-basics.md`；
+- `knowledge/02-hook-api.md`；
 - `guides/troubleshooting-cards.md` 的 Hook 不触发卡片。
 
 拆分步骤：
@@ -41,8 +41,8 @@ event=install_hook process=<process> target=<class#method> result=<ok|fail>
 
 推荐读取：
 
-- 完整知识库 ClassLoader、生命周期和 Hook 时机章节；
-- Hook 模型章节；
+- `knowledge/01-project-basics.md`；
+- `knowledge/02-hook-api.md`；
 - 快速排错卡片的 Hook 不触发部分。
 
 拆分步骤：
@@ -66,7 +66,7 @@ event=install_hook process=<process> target=<class#method> result=<ok|fail>
 
 推荐读取：
 
-- 完整知识库 service、Remote Preferences 章节；
+- `knowledge/03-service-remote-hot-reload.md`；
 - Java/Kotlin 模板；
 - service 失败排错卡片。
 
@@ -93,7 +93,7 @@ remote_config = invalid -> ignore and log
 
 推荐读取：
 
-- 完整知识库 Hot Reload 章节；
+- `knowledge/03-service-remote-hot-reload.md`；
 - 快速排错卡片 Hot Reload 部分；
 - 交互样例 Hot Reload 部分。
 
@@ -118,7 +118,7 @@ remote_config = invalid -> ignore and log
 
 推荐读取：
 
-- 完整知识库 Native Hook 章节；
+- `knowledge/04-native-migration-helper.md`；
 - `templates/module-files.md` 的 Native Hook 验证项；
 - 快速排错卡片 Native Hook 部分。
 
@@ -148,7 +148,7 @@ remote_config = invalid -> ignore and log
 
 - `cases/real-project-patterns.md`；
 - `guides/faq-anti-patterns.md`；
-- 完整知识库质量审查章节。
+- `knowledge/05-workflow-troubleshooting-quality.md`。
 
 审查顺序：
 
