@@ -69,6 +69,18 @@
       ]
     },
     {
+      "path": "guides/faq-anti-patterns.md",
+      "type": "user_guide",
+      "load_policy": "retrieve_on_faq_or_quality_check",
+      "priority": 78,
+      "tags": [
+        "faq",
+        "anti-patterns",
+        "safety-rewrite",
+        "quality"
+      ]
+    },
+    {
       "path": "cases/real-project-patterns.md",
       "type": "case_index",
       "load_policy": "retrieve_on_architecture_or_troubleshooting",
@@ -101,6 +113,13 @@
       "read": [
         "guides/quick-start.md",
         "README.md"
+      ]
+    },
+    {
+      "intent": "faq_or_anti_pattern_check",
+      "read": [
+        "guides/faq-anti-patterns.md",
+        "cases/real-project-patterns.md"
       ]
     },
     {

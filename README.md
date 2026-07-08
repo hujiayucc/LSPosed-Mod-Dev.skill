@@ -46,6 +46,7 @@ https://github.com/libxposed/helper
 | `templates/kotlin-api102.md` | Kotlin API 102 模板 | 生成 Kotlin 模块时读取 |
 | `templates/module-files.md` | Gradle 与 `META-INF/xposed` 模板 | 搭建工程时读取 |
 | `guides/quick-start.md` | 普通用户入口、提问方式和需提供信息 | 初次使用或不知道如何提问时读取 |
+| `guides/faq-anti-patterns.md` | FAQ、常见反模式和边界请求改写 | 高频问题、质量判断或安全改写时读取 |
 | `cases/real-project-patterns.md` | 真实项目架构与质量案例索引 | 架构设计、排错、审查时读取 |
 | `cases/migration-compat.md` | 旧 API 迁移与兼容案例索引 | 迁移旧模块时读取 |
 | `skill.manifest.json` | 机器可读加载清单 | 项目集成或自动化导入时读取 |
@@ -95,6 +96,7 @@ cases/
 | Native Hook | 完整知识库 Native Hook 章节 |
 | 旧模块迁移 | `cases/migration-compat.md` + 完整知识库旧 API 章节 |
 | 模块不生效 | 完整知识库排错章节 + `cases/real-project-patterns.md` |
+| 高频问题 / 反模式判断 | `guides/faq-anti-patterns.md` |
 | 架构审查 | `cases/real-project-patterns.md` + 完整知识库质量审查章节 |
 
 ## Token 策略

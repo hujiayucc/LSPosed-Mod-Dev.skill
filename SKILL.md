@@ -173,6 +173,7 @@ guides/
 
 读取：
 
+- 指南：`guides/faq-anti-patterns.md`，先判断高频问题、反模式和边界改写；
 - 完整知识库：排错总流程、模块不加载、Hook 不触发、ClassNotFound、NoSuchMethod、闪退、Remote Preferences、Hot Reload；
 - 案例：`cases/real-project-patterns.md`。
 
