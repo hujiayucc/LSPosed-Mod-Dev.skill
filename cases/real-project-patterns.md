@@ -1,6 +1,6 @@
 # 真实项目模式索引
 
-本文件用于低 token 加载真实项目经验。完整细节见 `LSPosed-Mod-Dev.full.knowledge.md` 第 42-49 章。
+本文件用于低 token 加载真实项目经验。通用案例提炼优先读取 `knowledge/06-cases-templates.md`。
 
 ## 1. 官方 libxposed/example
 

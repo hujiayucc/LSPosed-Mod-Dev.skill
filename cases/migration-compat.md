@@ -1,6 +1,6 @@
 # 旧 API 迁移与兼容案例索引
 
-本文件用于在旧模块迁移任务中低 token 加载。完整细节见 `LSPosed-Mod-Dev.full.knowledge.md` 的旧 API 兼容、迁移和真实案例章节。
+本文件用于在旧模块迁移任务中低 token 加载。迁移规则优先读取 `knowledge/04-native-migration-helper.md`，真实案例优先读取 `knowledge/06-cases-templates.md`。
 
 ## 1. 迁移原则
 
