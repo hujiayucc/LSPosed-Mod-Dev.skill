@@ -198,6 +198,12 @@ guides/
 - 指南：`guides/advanced-combinations.md`，用于多进程 Hook、延迟 ClassLoader、Remote Preferences 联动、Hot Reload 状态保护、Native + Java 混合模块和架构审查拆解；
 - 再按具体能力读取模板、案例或完整知识库章节。
 
+### 5.11 稳定性策略 / 降级路径
+
+读取：
+
+- 指南：`guides/stability-strategy.md`，用于重试、超时、参数校验、状态保护、失败降级和稳定性审查。
+
 ---
 
 ## 6. 章节索引

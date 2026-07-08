@@ -121,6 +121,20 @@
       ]
     },
     {
+      "path": "guides/stability-strategy.md",
+      "type": "user_guide",
+      "load_policy": "retrieve_on_stability_review",
+      "priority": 83,
+      "tags": [
+        "stability",
+        "retry",
+        "timeout",
+        "validation",
+        "fallback",
+        "logging"
+      ]
+    },
+    {
       "path": "cases/real-project-patterns.md",
       "type": "case_index",
       "load_policy": "retrieve_on_architecture_or_troubleshooting",
@@ -187,6 +201,13 @@
       ]
     },
     {
+      "intent": "stability_review_or_fallback",
+      "read": [
+        "guides/stability-strategy.md",
+        "guides/troubleshooting-cards.md"
+      ]
+    },
+    {
       "intent": "new_module_project",
       "read": [
         "SKILL.md",
@@ -241,9 +262,10 @@
     "never_always_load": [
       "LSPosed-Mod-Dev.full.knowledge.md",
       "templates/",
+      "guides/",
       "cases/"
     ],
-    "notes": "保留所有知识点，但只让启动版常驻。完整知识、模板和案例通过语义检索或显式读取按需进入上下文。"
+    "notes": "保留所有知识点，但只让启动版常驻。完整知识、模板、指南和案例通过语义检索或显式读取按需进入上下文。"
   },
   "safety": {
     "allowed": [

@@ -50,6 +50,7 @@ https://github.com/libxposed/helper
 | `guides/troubleshooting-cards.md` | 模块不生效、崩溃和高频失败的一页式排错卡片 | 排错时优先读取 |
 | `guides/interaction-examples.md` | 典型输入到推荐回答的样例、边界反馈和信息不足反馈结构 | 不确定回答结构或需要示例时读取 |
 | `guides/advanced-combinations.md` | 多进程、延迟 ClassLoader、Remote Preferences、Hot Reload、Native Hook 等复杂组合场景 | 复杂需求拆解或架构审查时读取 |
+| `guides/stability-strategy.md` | 重试、超时、参数校验、状态保护和失败降级策略 | 复杂代码生成、排错或稳定性审查时读取 |
 | `cases/real-project-patterns.md` | 真实项目架构与质量案例索引 | 架构设计、排错、审查时读取 |
 | `cases/migration-compat.md` | 旧 API 迁移与兼容案例索引 | 迁移旧模块时读取 |
 | `skill.manifest.json` | 机器可读加载清单 | 项目集成或自动化导入时读取 |
@@ -84,9 +85,10 @@ cases/
 建议顺序：
 
 1. `SKILL.md`：确定角色、边界、工作流和索引；
-2. `templates/`：需要生成工程或代码时优先读；
-3. `cases/`：需要架构审查、实战排错、旧 API 迁移时读取；
-4. `LSPosed-Mod-Dev.full.knowledge.md`：需要 API 细节、完整说明、排错总表时读取。
+2. `guides/`：需要快速入口、FAQ、排错卡片、回答样例、复杂场景拆解或稳定性策略时读取；
+3. `templates/`：需要生成工程或代码时优先读；
+4. `cases/`：需要架构审查、实战排错、旧 API 迁移时读取；
+5. `LSPosed-Mod-Dev.full.knowledge.md`：需要 API 细节、完整说明、排错总表时读取。
 
 ## 常见任务映射
 
@@ -103,6 +105,7 @@ cases/
 | 高频问题 / 反模式判断 | `guides/faq-anti-patterns.md` |
 | 需要交互样例或回答结构 | `guides/interaction-examples.md` |
 | 复杂场景组合 | `guides/advanced-combinations.md` + 对应模板或完整知识库章节 |
+| 稳定性审查 / 降级策略 | `guides/stability-strategy.md` |
 | 架构审查 | `cases/real-project-patterns.md` + 完整知识库质量审查章节 |
 
 ## Token 策略
@@ -110,6 +113,7 @@ cases/
 - 常驻只加载 `SKILL.md`；
 - 完整知识库永远不要全量常驻；
 - 模板只在生成代码时加载；
+- 指南只在需要快速入口、FAQ、排错、样例、复杂场景或稳定性策略时加载；
 - 案例只在需要架构推理、排错或迁移时加载；
 - 如果平台会自动索引目录下所有 Markdown，可以索引全部文件，但仍只把 `SKILL.md` 作为启动提示词。
 
