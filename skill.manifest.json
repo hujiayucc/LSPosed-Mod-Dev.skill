@@ -81,6 +81,20 @@
       ]
     },
     {
+      "path": "guides/troubleshooting-cards.md",
+      "type": "user_guide",
+      "load_policy": "retrieve_on_troubleshooting",
+      "priority": 85,
+      "tags": [
+        "troubleshooting",
+        "quick-cards",
+        "hook-failure",
+        "crash",
+        "hot-reload",
+        "native-hook"
+      ]
+    },
+    {
       "path": "cases/real-project-patterns.md",
       "type": "case_index",
       "load_policy": "retrieve_on_architecture_or_troubleshooting",
@@ -119,6 +133,15 @@
       "intent": "faq_or_anti_pattern_check",
       "read": [
         "guides/faq-anti-patterns.md",
+        "cases/real-project-patterns.md"
+      ]
+    },
+    {
+      "intent": "module_not_working_or_crash",
+      "read": [
+        "guides/troubleshooting-cards.md",
+        "guides/faq-anti-patterns.md",
+        "LSPosed-Mod-Dev.full.knowledge.md#排错章节",
         "cases/real-project-patterns.md"
       ]
     },
