@@ -9,6 +9,7 @@
 ```java
 package com.example.module;
 
+import android.util.Log;
 import androidx.annotation.NonNull;
 import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModule;
@@ -21,7 +22,7 @@ public final class ModuleEntry extends XposedModule {
 
     @Override
     public void onModuleLoaded(@NonNull XposedModuleInterface.ModuleLoadedParam param) {
-        log(TAG + ": event=module_loaded process=" + param.getProcessName()
+        log(Log.INFO, TAG, "event=module_loaded process=" + param.getProcessName()
                 + " api=" + getApiVersion()
                 + " framework=" + getFrameworkName()
                 + " version=" + getFrameworkVersion());
@@ -37,7 +38,7 @@ public final class ModuleEntry extends XposedModule {
 
     private synchronized void installHooks(ClassLoader classLoader) {
         if (installed) {
-            log(TAG + ": event=install_skipped reason=already_installed");
+            log(Log.INFO, TAG, "event=install_skipped reason=already_installed");
             return;
         }
         try {
@@ -57,13 +58,13 @@ public final class ModuleEntry extends XposedModule {
                     });
 
             installed = true;
-            log(TAG + ": event=hook_registered method=TargetClass.targetMethod");
+            log(Log.INFO, TAG, "event=hook_registered method=TargetClass.targetMethod");
         } catch (ClassNotFoundException e) {
-            log(TAG + ": event=class_not_found", e);
+            log(Log.WARN, TAG, "event=class_not_found", e);
         } catch (NoSuchMethodException e) {
-            log(TAG + ": event=method_not_found", e);
+            log(Log.WARN, TAG, "event=method_not_found", e);
         } catch (Throwable t) {
-            log(TAG + ": event=install_failed", t);
+            log(Log.ERROR, TAG, "event=install_failed", t);
         }
     }
 }
