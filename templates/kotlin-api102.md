@@ -48,6 +48,7 @@ class ModuleEntry : XposedModule() {
 
             log(Log.INFO, TAG, "event=hook_registered method=TargetClass.targetMethod")
         } catch (t: Throwable) {
+            installed.set(false)
             log(Log.ERROR, TAG, "event=install_failed", t)
         }
     }
