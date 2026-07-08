@@ -1,0 +1,12 @@
+.backup/
+
+# Local editor and OS files
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+
+# Generated build outputs
+build/
+out/
+.gradle/
