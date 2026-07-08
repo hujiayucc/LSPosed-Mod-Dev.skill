@@ -2,7 +2,7 @@
   "name": "LSPosed-Mod-Dev",
   "version": "1.0.2",
   "language": "zh-CN",
-  "purpose": "低Token常驻启动 + 按需检索完整知识库、模板和真实案例，用于合法授权的LSPosed模块开发。",
+  "purpose": "低Token常驻启动 + 按需检索知识分片、模板和真实案例，用于合法授权的LSPosed模块开发。",
   "entrypoint": {
     "type": "startup_prompt",
     "path": "SKILL.md",
@@ -11,11 +11,94 @@
   },
   "knowledge_base": [
     {
-      "path": "LSPosed-Mod-Dev.full.knowledge.md",
-      "type": "full_knowledge",
-      "load_policy": "retrieve_on_demand",
-      "priority": 30,
-      "description": "完整知识库。保留所有LSPosed模块开发知识点，不应全量常驻注入上下文。"
+      "path": "knowledge/index.md",
+      "type": "knowledge_index",
+      "load_policy": "retrieve_on_task_mapping",
+      "priority": 88,
+      "tags": [
+        "knowledge-split",
+        "index",
+        "retrieval"
+      ],
+      "description": "知识库分片索引。用于按任务类型选择轻量主题分片。"
+    },
+    {
+      "path": "knowledge/01-project-basics.md",
+      "type": "knowledge_shard",
+      "load_policy": "retrieve_on_project_setup",
+      "priority": 86,
+      "tags": [
+        "project-basics",
+        "metadata",
+        "lifecycle",
+        "api102"
+      ],
+      "description": "工程基础、依赖、元数据、入口类和生命周期。"
+    },
+    {
+      "path": "knowledge/02-hook-api.md",
+      "type": "knowledge_shard",
+      "load_policy": "retrieve_on_hook_api",
+      "priority": 86,
+      "tags": [
+        "hook-api",
+        "chain",
+        "hookhandle",
+        "invoker"
+      ],
+      "description": "Hook 链式模型、Chain、ExceptionMode、HookHandle、Invoker 与 deoptimize。"
+    },
+    {
+      "path": "knowledge/03-service-remote-hot-reload.md",
+      "type": "knowledge_shard",
+      "load_policy": "retrieve_on_service_or_hot_reload",
+      "priority": 86,
+      "tags": [
+        "service",
+        "remote-preferences",
+        "remote-files",
+        "hot-reload"
+      ],
+      "description": "libxposed/service、Remote Preferences、Remote Files、scope 请求与 Hot Reload。"
+    },
+    {
+      "path": "knowledge/04-native-migration-helper.md",
+      "type": "knowledge_shard",
+      "load_policy": "retrieve_on_native_or_migration",
+      "priority": 84,
+      "tags": [
+        "native-hook",
+        "migration",
+        "helper",
+        "logging"
+      ],
+      "description": "Native Hook、旧 API 迁移、libxposed/helper 与日志规范。"
+    },
+    {
+      "path": "knowledge/05-workflow-troubleshooting-quality.md",
+      "type": "knowledge_shard",
+      "load_policy": "retrieve_on_troubleshooting_or_review",
+      "priority": 87,
+      "tags": [
+        "workflow",
+        "troubleshooting",
+        "quality-review",
+        "architecture"
+      ],
+      "description": "排错流程、回答工作流、架构范式、实战排错与质量审查。"
+    },
+    {
+      "path": "knowledge/06-cases-templates.md",
+      "type": "knowledge_shard",
+      "load_policy": "retrieve_on_cases_or_templates",
+      "priority": 82,
+      "tags": [
+        "cases",
+        "templates",
+        "api102",
+        "project-patterns"
+      ],
+      "description": "真实案例提炼、API 102 模板增强和案例转化规则。"
     }
   ],
   "resources": [
@@ -44,6 +127,32 @@
       ]
     },
     {
+      "path": "templates/defensive-error-handling.md",
+      "type": "template",
+      "load_policy": "retrieve_on_defensive_code_or_error_codes",
+      "priority": 81,
+      "tags": [
+        "defensive-code",
+        "error-codes",
+        "logging",
+        "fallback",
+        "validation"
+      ]
+    },
+    {
+      "path": "templates/reliability-helpers.md",
+      "type": "template",
+      "load_policy": "retrieve_on_reliability_helpers_or_retry_timeout",
+      "priority": 82,
+      "tags": [
+        "retry",
+        "timeout",
+        "fallback",
+        "helper",
+        "stability"
+      ]
+    },
+    {
       "path": "templates/module-files.md",
       "type": "template",
       "load_policy": "retrieve_on_project_setup",
@@ -66,6 +175,45 @@
         "onboarding",
         "usage",
         "prompts"
+      ]
+    },
+    {
+      "path": "guides/practical-prompts.md",
+      "type": "user_guide",
+      "load_policy": "retrieve_on_practical_prompts_or_trigger_examples",
+      "priority": 79,
+      "tags": [
+        "prompts",
+        "examples",
+        "trigger-phrases",
+        "onboarding",
+        "validation"
+      ]
+    },
+    {
+      "path": "guides/domestic-network.md",
+      "type": "user_guide",
+      "load_policy": "retrieve_on_domestic_network_or_dependency_access",
+      "priority": 77,
+      "tags": [
+        "domestic-network",
+        "github",
+        "maven",
+        "gradle",
+        "offline"
+      ]
+    },
+    {
+      "path": "guides/multi-module-coexistence.md",
+      "type": "user_guide",
+      "load_policy": "retrieve_on_multi_module_coexistence",
+      "priority": 83,
+      "tags": [
+        "multi-module",
+        "coexistence",
+        "scope",
+        "priority",
+        "conflict"
       ]
     },
     {
@@ -121,6 +269,21 @@
       ]
     },
     {
+      "path": "guides/special-boundaries.md",
+      "type": "user_guide",
+      "load_policy": "retrieve_on_special_boundary_or_high_risk",
+      "priority": 84,
+      "tags": [
+        "boundary",
+        "android-version",
+        "api-version",
+        "systemui",
+        "system-server",
+        "native-hook",
+        "hot-reload"
+      ]
+    },
+    {
       "path": "guides/stability-strategy.md",
       "type": "user_guide",
       "load_policy": "retrieve_on_stability_review",
@@ -135,6 +298,19 @@
       ]
     },
     {
+      "path": "guides/validation-checklist.md",
+      "type": "user_guide",
+      "load_policy": "retrieve_on_validation_or_release_check",
+      "priority": 84,
+      "tags": [
+        "validation",
+        "release-check",
+        "apk-check",
+        "error-codes",
+        "quality-gate"
+      ]
+    },
+    {
       "path": "cases/real-project-patterns.md",
       "type": "case_index",
       "load_policy": "retrieve_on_architecture_or_troubleshooting",
@@ -145,6 +321,46 @@
         "quality",
         "troubleshooting",
         "api102"
+      ]
+    },
+    {
+      "path": "cases/api102-real-cases.md",
+      "type": "case_index",
+      "load_policy": "retrieve_on_api102_cases_or_complex_scenario",
+      "priority": 76,
+      "tags": [
+        "api102",
+        "real-cases",
+        "remote-preferences",
+        "hot-reload",
+        "native-hook",
+        "multi-process"
+      ]
+    },
+    {
+      "path": "cases/advanced-native-hook.md",
+      "type": "case_index",
+      "load_policy": "retrieve_on_advanced_native_hook",
+      "priority": 79,
+      "tags": [
+        "native-hook",
+        "native-init",
+        "cmake",
+        "jni",
+        "fallback"
+      ]
+    },
+    {
+      "path": "cases/failure-fix-walkthroughs.md",
+      "type": "case_index",
+      "load_policy": "retrieve_on_failure_fix_or_code_diff",
+      "priority": 78,
+      "tags": [
+        "failure-fix",
+        "before-after",
+        "troubleshooting",
+        "error-codes",
+        "validation"
       ]
     },
     {
@@ -166,13 +382,17 @@
       "intent": "onboarding_or_usage_help",
       "read": [
         "guides/quick-start.md",
-        "README.md"
+        "guides/practical-prompts.md",
+        "guides/domestic-network.md",
+        "README.md",
+        "knowledge/index.md"
       ]
     },
     {
       "intent": "faq_or_anti_pattern_check",
       "read": [
         "guides/faq-anti-patterns.md",
+        "guides/special-boundaries.md",
         "cases/real-project-patterns.md"
       ]
     },
@@ -180,8 +400,11 @@
       "intent": "module_not_working_or_crash",
       "read": [
         "guides/troubleshooting-cards.md",
+        "guides/validation-checklist.md",
         "guides/faq-anti-patterns.md",
-        "LSPosed-Mod-Dev.full.knowledge.md#排错章节",
+        "templates/defensive-error-handling.md",
+        "knowledge/05-workflow-troubleshooting-quality.md",
+        "cases/failure-fix-walkthroughs.md",
         "cases/real-project-patterns.md"
       ]
     },
@@ -189,6 +412,7 @@
       "intent": "interaction_examples_or_feedback",
       "read": [
         "guides/interaction-examples.md",
+        "guides/practical-prompts.md",
         "guides/quick-start.md"
       ]
     },
@@ -196,62 +420,216 @@
       "intent": "complex_scenario_combination",
       "read": [
         "guides/advanced-combinations.md",
-        "templates/java-api102.md 或 templates/kotlin-api102.md",
-        "LSPosed-Mod-Dev.full.knowledge.md#相关章节"
+        "guides/multi-module-coexistence.md",
+        "guides/special-boundaries.md",
+        "guides/validation-checklist.md",
+        "cases/api102-real-cases.md",
+        "cases/advanced-native-hook.md",
+        "knowledge/02-hook-api.md",
+        "knowledge/03-service-remote-hot-reload.md",
+        "knowledge/04-native-migration-helper.md",
+        "templates/java-api102.md",
+        "templates/kotlin-api102.md",
+        "templates/defensive-error-handling.md",
+        "templates/reliability-helpers.md"
       ]
     },
     {
       "intent": "stability_review_or_fallback",
       "read": [
         "guides/stability-strategy.md",
-        "guides/troubleshooting-cards.md"
+        "guides/validation-checklist.md",
+        "guides/troubleshooting-cards.md",
+        "templates/defensive-error-handling.md",
+        "templates/reliability-helpers.md",
+        "knowledge/05-workflow-troubleshooting-quality.md"
       ]
     },
     {
       "intent": "new_module_project",
       "read": [
         "SKILL.md",
+        "knowledge/01-project-basics.md",
         "templates/module-files.md",
-        "templates/java-api102.md 或 templates/kotlin-api102.md"
+        "templates/java-api102.md",
+        "templates/kotlin-api102.md"
       ]
     },
     {
-      "intent": "api_detail_or_concept",
+      "intent": "hook_code_or_api_detail",
       "read": [
         "SKILL.md",
-        "LSPosed-Mod-Dev.full.knowledge.md#相关章节"
+        "knowledge/01-project-basics.md",
+        "knowledge/02-hook-api.md",
+        "templates/java-api102.md",
+        "templates/kotlin-api102.md",
+        "templates/defensive-error-handling.md"
       ]
     },
     {
       "intent": "remote_preferences_or_service",
       "read": [
-        "LSPosed-Mod-Dev.full.knowledge.md#service与Remote Preferences章节"
+        "knowledge/03-service-remote-hot-reload.md",
+        "cases/api102-real-cases.md",
+        "templates/module-files.md"
       ]
     },
     {
       "intent": "hot_reload",
       "read": [
-        "LSPosed-Mod-Dev.full.knowledge.md#Hot Reload章节"
+        "knowledge/03-service-remote-hot-reload.md",
+        "cases/api102-real-cases.md",
+        "guides/stability-strategy.md"
       ]
     },
     {
       "intent": "native_hook",
       "read": [
-        "LSPosed-Mod-Dev.full.knowledge.md#Native Hook章节"
+        "knowledge/04-native-migration-helper.md",
+        "cases/advanced-native-hook.md",
+        "cases/api102-real-cases.md",
+        "guides/advanced-combinations.md",
+        "guides/special-boundaries.md",
+        "guides/validation-checklist.md"
       ]
     },
     {
       "intent": "legacy_migration",
       "read": [
         "cases/migration-compat.md",
-        "LSPosed-Mod-Dev.full.knowledge.md#旧API兼容与迁移章节"
+        "knowledge/04-native-migration-helper.md"
       ]
     },
     {
       "intent": "architecture_review_or_troubleshooting",
       "read": [
         "cases/real-project-patterns.md",
-        "LSPosed-Mod-Dev.full.knowledge.md#排错与质量审查章节"
+        "cases/api102-real-cases.md",
+        "cases/failure-fix-walkthroughs.md",
+        "guides/validation-checklist.md",
+        "templates/defensive-error-handling.md",
+        "knowledge/05-workflow-troubleshooting-quality.md",
+        "knowledge/06-cases-templates.md"
+      ]
+    },
+    {
+      "intent": "api102_real_cases",
+      "read": [
+        "cases/api102-real-cases.md",
+        "cases/real-project-patterns.md",
+        "knowledge/06-cases-templates.md"
+      ]
+    },
+    {
+      "intent": "practical_prompts_or_trigger_examples",
+      "read": [
+        "guides/practical-prompts.md",
+        "guides/quick-start.md",
+        "guides/interaction-examples.md",
+        "cases/failure-fix-walkthroughs.md",
+        "guides/validation-checklist.md",
+        "templates/defensive-error-handling.md"
+      ]
+    },
+    {
+      "intent": "defensive_code_or_error_codes",
+      "read": [
+        "templates/defensive-error-handling.md",
+        "templates/reliability-helpers.md",
+        "guides/stability-strategy.md",
+        "guides/validation-checklist.md",
+        "templates/java-api102.md",
+        "templates/kotlin-api102.md"
+      ]
+    },
+    {
+      "intent": "validation_or_release_check",
+      "read": [
+        "guides/validation-checklist.md",
+        "templates/module-files.md",
+        "templates/defensive-error-handling.md",
+        "templates/reliability-helpers.md",
+        "cases/failure-fix-walkthroughs.md",
+        "cases/advanced-native-hook.md",
+        "guides/troubleshooting-cards.md",
+        "guides/stability-strategy.md",
+        "guides/domestic-network.md",
+        "guides/multi-module-coexistence.md"
+      ]
+    },
+    {
+      "intent": "failure_fix_or_code_diff",
+      "read": [
+        "cases/failure-fix-walkthroughs.md",
+        "guides/troubleshooting-cards.md",
+        "guides/validation-checklist.md",
+        "templates/defensive-error-handling.md",
+        "knowledge/02-hook-api.md",
+        "knowledge/03-service-remote-hot-reload.md",
+        "knowledge/04-native-migration-helper.md"
+      ]
+    },
+    {
+      "intent": "domestic_network_or_dependency_access",
+      "read": [
+        "guides/domestic-network.md",
+        "templates/module-files.md",
+        "knowledge/01-project-basics.md",
+        "guides/validation-checklist.md",
+        "README.md"
+      ]
+    },
+    {
+      "intent": "multi_module_coexistence_or_conflict",
+      "read": [
+        "guides/multi-module-coexistence.md",
+        "guides/advanced-combinations.md",
+        "guides/troubleshooting-cards.md",
+        "templates/defensive-error-handling.md",
+        "guides/validation-checklist.md",
+        "cases/failure-fix-walkthroughs.md"
+      ]
+    },
+    {
+      "intent": "advanced_native_hook",
+      "read": [
+        "cases/advanced-native-hook.md",
+        "knowledge/04-native-migration-helper.md",
+        "guides/special-boundaries.md",
+        "guides/advanced-combinations.md",
+        "guides/validation-checklist.md",
+        "templates/reliability-helpers.md"
+      ]
+    },
+    {
+      "intent": "reliability_helpers_or_retry_timeout",
+      "read": [
+        "templates/reliability-helpers.md",
+        "guides/stability-strategy.md",
+        "templates/defensive-error-handling.md",
+        "guides/validation-checklist.md",
+        "cases/failure-fix-walkthroughs.md"
+      ]
+    },
+    {
+      "intent": "full_audit_or_missing_detail",
+      "read": [
+        "knowledge/index.md",
+        "knowledge/01-project-basics.md",
+        "knowledge/02-hook-api.md",
+        "knowledge/03-service-remote-hot-reload.md",
+        "knowledge/04-native-migration-helper.md",
+        "knowledge/05-workflow-troubleshooting-quality.md",
+        "knowledge/06-cases-templates.md",
+        "guides/practical-prompts.md",
+        "guides/domestic-network.md",
+        "guides/multi-module-coexistence.md",
+        "guides/validation-checklist.md",
+        "templates/defensive-error-handling.md",
+        "templates/reliability-helpers.md",
+        "cases/failure-fix-walkthroughs.md",
+        "cases/api102-real-cases.md",
+        "cases/advanced-native-hook.md"
       ]
     }
   ],
@@ -260,7 +638,6 @@
       "SKILL.md"
     ],
     "never_always_load": [
-      "LSPosed-Mod-Dev.full.knowledge.md",
       "templates/",
       "guides/",
       "cases/"
