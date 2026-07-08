@@ -10,6 +10,14 @@ dependencies {
 }
 ```
 
+如果 Java 模板保留 `androidx.annotation.NonNull`，且项目没有其他 AndroidX 依赖提供该注解，可添加：
+
+```kotlin
+dependencies {
+    compileOnly("androidx.annotation:annotation:1.9.1")
+}
+```
+
 如果使用本地 stub：
 
 ```kotlin
@@ -21,10 +29,11 @@ dependencies {
 要求：
 
 - `libxposed` API 必须是 `compileOnly`；
+- `androidx.annotation` 只用于编译期注解时也建议使用 `compileOnly`；
 - 不得用 `implementation` 把 API 打包进 APK；
 - release 混淆必须保留入口类和 `META-INF/xposed` 元数据；
 - 需要 service 时再加入 `libxposed/service`；
-- 需要 helper 时再加入 `libxposed/helper`。
+- 需要 helper 时再加入 `libxposed/helper`，并先确认依赖版本可解析。
 
 ## module.prop
 
