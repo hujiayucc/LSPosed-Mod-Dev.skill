@@ -2,6 +2,26 @@
 
 这是一个面向 **LSPosed 模块开发** 的低 Token Skill 包。它保留完整知识，但通过“启动版 + 按需知识库 + 模板 + 案例索引”的结构降低常驻上下文占用。
 
+## 官方基线
+
+本 Skill 以 `libxposed` 官方项目作为主要技术基线：
+
+- `libxposed/api`：默认对齐 `io.github.libxposed:api:102.0.0`；
+- `libxposed/service`：需要模块 App 与框架通信时使用 `io.github.libxposed:service:102.0.0`；
+- `libxposed/example`：作为现代模块目录结构、`META-INF/xposed` 元数据和基础入口写法的优先参考；
+- `libxposed/helper`：仅作为复杂查找和混淆定位的可选辅助库，依赖版本生成前必须以 Maven/Gradle 实际可解析版本为准；
+- Java 模板使用 `androidx.annotation.NonNull`，项目未包含 AndroidX annotation 时，应额外添加注解依赖或移除模板中的注解 import。
+
+官方参考：
+
+```text
+https://github.com/libxposed
+https://github.com/libxposed/api
+https://github.com/libxposed/service
+https://github.com/libxposed/example
+https://github.com/libxposed/helper
+```
+
 ## 文件角色
 
 | 文件 | 角色 | 加载策略 |
@@ -83,6 +103,20 @@ cases/
 - 恶意控制设备；
 - 破坏系统稳定；
 - 持久化后门。
+
+## 发布前核对
+
+发布到 SkillHub 或 GitHub 前建议确认：
+
+- `README.md`、`SKILL.md`、`skill.manifest.json` 的版本号和发布说明一致；
+- 模板中的 `libxposed/api` 与 `libxposed/service` 版本仍能从官方仓库或 Maven 解析；
+- `libxposed/helper` 相关依赖只在确需复杂查找时生成，并以实际可解析版本为准；
+- Java 模板如保留 `androidx.annotation.NonNull`，目标工程需要具备对应注解依赖；
+- GitHub 仓库建议提供 LICENSE、tag 或 release，并在发布说明中关联 SkillHub 页面和对应 commit。
+
+## 许可证
+
+详见 [LICENSE](LICENSE)。
 
 ## 最终推荐
 
