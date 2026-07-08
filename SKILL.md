@@ -185,6 +185,12 @@ guides/
 - 完整知识库：高质量架构范式、真实项目案例库、代码质量审查清单、Agent 工作流增强；
 - 案例：`cases/real-project-patterns.md`。
 
+### 5.9 回答样例 / 结构化反馈
+
+读取：
+
+- 指南：`guides/interaction-examples.md`，用于输入问题到推荐回答、边界请求和信息不足场景的结构化反馈。
+
 ---
 
 ## 6. 章节索引

@@ -95,6 +95,18 @@
       ]
     },
     {
+      "path": "guides/interaction-examples.md",
+      "type": "user_guide",
+      "load_policy": "retrieve_on_interaction_design",
+      "priority": 72,
+      "tags": [
+        "examples",
+        "answers",
+        "structured-feedback",
+        "onboarding"
+      ]
+    },
+    {
       "path": "cases/real-project-patterns.md",
       "type": "case_index",
       "load_policy": "retrieve_on_architecture_or_troubleshooting",
@@ -143,6 +155,13 @@
         "guides/faq-anti-patterns.md",
         "LSPosed-Mod-Dev.full.knowledge.md#排错章节",
         "cases/real-project-patterns.md"
+      ]
+    },
+    {
+      "intent": "interaction_examples_or_feedback",
+      "read": [
+        "guides/interaction-examples.md",
+        "guides/quick-start.md"
       ]
     },
     {
