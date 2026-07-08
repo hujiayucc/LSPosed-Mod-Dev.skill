@@ -1,6 +1,6 @@
 {
   "name": "LSPosed-Mod-Dev",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "language": "zh-CN",
   "purpose": "低Token常驻启动 + 按需检索知识分片、模板和真实案例，用于合法授权的LSPosed模块开发。",
   "entrypoint": {
