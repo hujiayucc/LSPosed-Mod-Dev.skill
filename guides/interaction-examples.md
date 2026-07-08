@@ -1,6 +1,6 @@
 # 交互样例与结构化反馈
 
-这个文件用于展示用户输入后，Skill 应如何选择资料、组织回答和处理边界问题。样例不是固定话术，而是回答结构参考。
+这个文件用于展示用户输入后，Skill 应如何选择资料、组织回答和处理边界问题。样例不是固定话术，而是回答结构参考。需要更完整、可直接复制的提问触发词时读取 `guides/practical-prompts.md`。
 
 ## 样例 1：新建模块
 
@@ -14,7 +14,7 @@
 
 - `templates/module-files.md`；
 - `templates/java-api102.md`；
-- 完整知识库工程结构和入口类章节。
+- `knowledge/01-project-basics.md`。
 
 推荐回答要点：
 
@@ -38,7 +38,7 @@
 
 - 先确认是否为自有 App、测试环境或授权调试；
 - 确认类名、方法签名、目标进程和版本；
-- 读取 Java/Kotlin 模板和 Hook 模型章节。
+- 读取 `templates/java-api102.md`、`templates/kotlin-api102.md` 和 `knowledge/02-hook-api.md`。
 
 推荐回答要点：
 
@@ -62,7 +62,7 @@
 
 - `guides/troubleshooting-cards.md`；
 - `guides/faq-anti-patterns.md`；
-- 完整知识库排错章节。
+- `knowledge/05-workflow-troubleshooting-quality.md`。
 
 推荐回答要点：
 
@@ -86,7 +86,7 @@
 推荐读取：
 
 - `cases/migration-compat.md`；
-- 完整知识库旧 API 兼容与迁移章节；
+- `knowledge/04-native-migration-helper.md`；
 - Java/Kotlin API 102 模板。
 
 推荐回答要点：
@@ -108,7 +108,7 @@
 
 推荐读取：
 
-- 完整知识库 Hot Reload 章节；
+- `knowledge/03-service-remote-hot-reload.md`；
 - `guides/troubleshooting-cards.md` 的 Hot Reload 卡片。
 
 推荐回答要点：

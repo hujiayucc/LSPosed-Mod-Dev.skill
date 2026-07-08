@@ -1,6 +1,6 @@
 # 快速排错卡片
 
-这个文件用于把高频故障压缩成一页式排查路径。先按对应卡片排查，再按需读取完整知识库排错章节和案例。
+这个文件用于把高频故障压缩成一页式排查路径。先按对应卡片排查，再按需读取 `knowledge/05-workflow-troubleshooting-quality.md`、`cases/failure-fix-walkthroughs.md` 和其他案例。
 
 ## 卡片 1：模块不生效
 
@@ -119,7 +119,7 @@ event=install_hook package=<pkg> process=<process> class=<class> method=<method>
 建议读取：
 
 - `cases/migration-compat.md`；
-- 完整知识库旧 API 兼容与迁移章节；
+- `knowledge/04-native-migration-helper.md`；
 - Java/Kotlin API 102 模板。
 
 ## 输出格式建议
