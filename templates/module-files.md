@@ -47,6 +47,8 @@ exceptionMode=protective
 autoHotReload=false
 ```
 
+说明：官方 `libxposed/example` 为演示热重载默认使用 `autoHotReload=true`。本模板默认关闭，是为了避免未实现 `onHotReloading()` 清理逻辑时在更新后自动重载；只有完整处理旧 Hook、线程、JNI/native 资源和 `onHotReloaded()` 替换逻辑后，才建议改为 `true`。
+
 只面向 API 102：
 
 ```properties

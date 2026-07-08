@@ -152,12 +152,12 @@ dependencies {
 - 使用 Dex 分析条件定位方法；
 - 使用 Kotlin DSL 编写匹配逻辑。
 
-可选依赖示例：
+可选依赖不要直接写死版本，生成真实工程前必须先确认 Maven/Gradle 可解析版本：
 
 ```kotlin
 dependencies {
-    implementation("io.github.libxposed:helper:100.0.1")
-    implementation("io.github.libxposed:helper-ktx:100.0.1")
+    implementation("io.github.libxposed:helper:<resolved-version>")
+    implementation("io.github.libxposed:helper-ktx:<resolved-version>")
 }
 ```
 
@@ -166,8 +166,9 @@ dependencies {
 - `helper` 不是必须依赖；
 - 简单模块可以不用；
 - 只有当用户需要复杂查找、混淆定位、DSL 匹配时才建议使用；
-- `helper` 仓库版本线与 `api`、`service` 不完全同步，生成依赖前必须以 Maven/Gradle 实际可解析版本为准；
-- 不要把 `helper` 当成 `api:102.0.0` 的同版本组件，它当前版本线不同。
+- `libxposed/helper` 的发布节奏和 `api`、`service` 不同步；
+- GitHub 仓库 tag 不能等同于 Maven 坐标可用版本，生成依赖前必须以实际 Gradle 解析结果为准；
+- 不要把 `helper` 当成 `api:102.0.0` 的同版本组件。
 
 ---
 
@@ -250,6 +251,7 @@ dependencies {
 
 - `src/main/resources/META-INF/xposed/*` 必须被正确打包进 APK；
 - 官方 example 使用 `packaging.resources.merges += "META-INF/xposed/*"`；
+- 官方 example 还使用 `packaging.resources.excludes += "**"` 做极简资源打包；真实模块如果有 UI、图片、raw 资源或其他运行时资源，不要盲目照抄这个排除策略；
 - 如果打包后 APK 中没有 `META-INF/xposed/java_init.list`，模块不会被识别为现代模块；
 - 如果模块有 UI 或 service 通信，再添加 `implementation("io.github.libxposed:service:102.0.0")`。
 
@@ -388,6 +390,8 @@ autoHotReload=false
 
 API 102+ 可用。
 
+官方 `libxposed/example` 为演示热重载默认使用 `autoHotReload=true`。本 Skill 默认模板使用 `false`，是为了避免模块尚未实现旧 Hook、线程、JNI/native 资源清理和 `onHotReloaded()` 替换逻辑时，在模块 App 更新后自动重载到不完整状态。
+
 注意：
 
 - 即使设置 `autoHotReload=true`，旧代码中的 `onHotReloading()` 也必须返回 `true` 才会继续；
@@ -512,6 +516,12 @@ public void onPackageLoaded(@NonNull PackageLoadedParam param) {
 - 早于 `AppComponentFactory` 实例化；
 - 每个 package name 在进程中只调用一次；
 - 一个进程可能加载多个 package。
+
+边界：
+
+- `onPackageLoaded()` 标注为 Android Q+；
+- `getDefaultClassLoader()` 也只应在 Android Q+ 路径使用；
+- 需要更早时机才使用该回调，否则默认优先使用 `onPackageReady()`。
 
 可用信息：
 
@@ -1123,9 +1133,17 @@ String[] files = listRemoteFiles();
 App 侧 service 支持：
 
 ```kotlin
-service.listRemoteFiles()
-service.deleteRemoteFile("config.json")
+val files = service.listRemoteFiles()
+val deleted = service.deleteRemoteFile("config.json")
 ```
+
+规则：
+
+- `openRemoteFile(name)` 会打开模块共享数据目录中的文件，不存在时由框架创建；
+- 框架返回空文件描述符时应视为 service 异常；
+- `deleteRemoteFile(name)` 返回 `false` 表示文件不存在，不要当成异常崩溃；
+- Remote Files 依赖框架 remote capability，不支持时会失败；
+- 所有 App 侧 remote file 调用都要处理 service 死亡或远程异常。
 
 ---
 
@@ -1148,6 +1166,15 @@ service.deleteRemoteFile("config.json")
 - 删除 Remote Files；
 - 查询运行中的 Hook 目标；
 - 触发 Hot Reload。
+
+通用边界：
+
+- service 只在模块 App 侧使用，不要在 Hook 进程里依赖它完成高频逻辑；
+- App 启动时 service 可能尚未绑定，UI 和业务逻辑必须处理空 service；
+- service 死亡或 Binder 调用失败会表现为 `XposedService.ServiceException`；
+- remote preferences、remote files 依赖框架 remote capability；
+- `getRunningTargets()` 和 `hotReloadModule(...)` 要求 service API >= 102，不满足时会失败；
+- scope 请求和 Hot Reload 结果都是异步路径，不要写成同步成功假设。
 
 ---
 
@@ -1182,6 +1209,7 @@ class App : Application(), XposedServiceHelper.OnServiceListener {
 
 - `registerListener()` 应只调用一次；
 - `onServiceBind()` 可能被多次调用，因为可能存在多个 Xposed framework；
+- 多框架场景下不要只按“最后一次绑定”做隐式选择，复杂 UI 应展示 `frameworkName`、`frameworkVersion` 等信息供用户判断；
 - 必须处理 `onServiceDied()`；
 - UI 层应监听 service 状态；
 - 不要假设 App 启动时立即拿到 service。
@@ -1242,6 +1270,24 @@ service.requestScope(
 ```kotlin
 service.removeScope(listOf("com.example.target"))
 ```
+
+### 26.6 运行中目标
+
+```kotlin
+if (service.apiVersion >= 102) {
+    val targets = service.runningTargets
+}
+```
+
+规则：
+
+- `getRunningTargets()` 只在 service API >= 102 可用；
+- 返回对象可传给 `hotReloadModule(...)`；
+- `pid`、`uid`、`processName`、`loadedVersionCode` 只用于显示和诊断，不要当作稳定目标身份；
+- 目标状态包括 `UP_TO_DATE`、`STALE`、`RELOADING`、`FAILED`；
+- 只有 `STALE` 通常表示目标仍运行旧模块代码，可能适合热重载；
+- `RELOADING` 表示已有热重载进行中，重复请求可能得到 `IN_PROGRESS`；
+- `FAILED` 表示上次热重载被旧模块拒绝或过程中抛异常。
 
 ---
 
@@ -1341,6 +1387,9 @@ if (service.apiVersion >= 102) {
 
 - `target` 必须来自 `service.runningTargets`；
 - `hotReloadModule(...)` 只负责校验并提交请求，结果通过 callback 异步返回；
+- callback 可能运行在 Binder 线程，更新 UI 前必须切回主线程；
+- 调用前检查 service API >= 102，并处理 `UnsupportedOperationException`、`XposedService.ServiceException` 和 `SecurityException`；
+- `HookedTarget` 的 `pid`、`uid`、`processName`、`loadedVersionCode` 只用于显示和诊断，不要当作稳定身份；
 - 如果框架无法为目标进程提供有效的新模块 generation，会返回 `UNSUPPORTED`；
 - 可选 `data` 会传给旧模块，但只能包含 classloader-neutral 的值；
 - 不要在 `data` 中放模块自定义 `Parcelable` 或 `Serializable` 对象；
