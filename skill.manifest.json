@@ -57,6 +57,18 @@
       ]
     },
     {
+      "path": "guides/quick-start.md",
+      "type": "user_guide",
+      "load_policy": "retrieve_on_onboarding",
+      "priority": 75,
+      "tags": [
+        "quick-start",
+        "onboarding",
+        "usage",
+        "prompts"
+      ]
+    },
+    {
       "path": "cases/real-project-patterns.md",
       "type": "case_index",
       "load_policy": "retrieve_on_architecture_or_troubleshooting",
@@ -84,6 +96,13 @@
     }
   ],
   "retrieval_rules": [
+    {
+      "intent": "onboarding_or_usage_help",
+      "read": [
+        "guides/quick-start.md",
+        "README.md"
+      ]
+    },
     {
       "intent": "new_module_project",
       "read": [

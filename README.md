@@ -22,6 +22,20 @@ https://github.com/libxposed/example
 https://github.com/libxposed/helper
 ```
 
+## 普通用户快速开始
+
+如果只是想使用这个 Skill，不需要先阅读完整知识库。直接向 AI 助手说明目标即可，例如：
+
+```text
+帮我新建一个 API 102 的 LSPosed 模块，目标包名是 com.example.app，用 Java。
+```
+
+```text
+模块启用后 Hook 没触发，这是 module.prop、scope.list 和 LSPosed 日志，请帮我排查。
+```
+
+更多提问方式和需要提供的信息见 `guides/quick-start.md`。
+
 ## 文件角色
 
 | 文件 | 角色 | 加载策略 |
@@ -31,6 +45,7 @@ https://github.com/libxposed/helper
 | `templates/java-api102.md` | Java API 102 模板 | 生成 Java 模块时读取 |
 | `templates/kotlin-api102.md` | Kotlin API 102 模板 | 生成 Kotlin 模块时读取 |
 | `templates/module-files.md` | Gradle 与 `META-INF/xposed` 模板 | 搭建工程时读取 |
+| `guides/quick-start.md` | 普通用户入口、提问方式和需提供信息 | 初次使用或不知道如何提问时读取 |
 | `cases/real-project-patterns.md` | 真实项目架构与质量案例索引 | 架构设计、排错、审查时读取 |
 | `cases/migration-compat.md` | 旧 API 迁移与兼容案例索引 | 迁移旧模块时读取 |
 | `skill.manifest.json` | 机器可读加载清单 | 项目集成或自动化导入时读取 |
@@ -72,6 +87,7 @@ cases/
 
 | 用户任务 | 推荐读取 |
 |---|---|
+| 不知道如何开始使用 | `guides/quick-start.md` |
 | 新建 LSPosed 模块 | `SKILL.md` + `templates/module-files.md` + Java/Kotlin 模板 |
 | 写 Hook 代码 | `SKILL.md` + Java/Kotlin 模板 + 完整知识库 Hook 章节 |
 | Remote Preferences | 完整知识库 service / Remote Preferences 章节 |
