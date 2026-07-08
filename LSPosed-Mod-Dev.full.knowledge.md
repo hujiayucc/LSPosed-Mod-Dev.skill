@@ -1247,16 +1247,23 @@ service.removeScope(listOf("com.example.target"))
 
 ## 27. Hot Reload
 
-Hot Reload 是 API 102 的高级能力。
+Hot Reload 是 API 102 的高级能力，用于在模块 App 更新后为已经运行的目标进程加载新的模块 generation。
+
+触发来源：
+
+- 模块 App 通过 `libxposed/service` 调用 `hotReloadModule(...)`；
+- 模块 App 更新时，如果 `module.prop` 设置 `autoHotReload=true`，框架可尝试自动热重载；
+- 自动热重载仍必须经过旧代码的 `onHotReloading()`，只有返回 `true` 才会继续。
 
 ### 27.1 限制
 
 - 只支持恰好一个 Java 入口类；
 - 不支持零入口或多入口模块；
-- 框架可能返回 unsupported；
+- 框架可能返回 `UNSUPPORTED`；
 - 不保证 native library 立即卸载；
 - 不自动重放生命周期；
-- 不是配置同步机制。
+- 不是配置同步机制；
+- Hot Reload 按 target 串行执行，同一个目标进程不会并发执行多个热重载请求。
 
 ### 27.2 onHotReloading
 
@@ -1275,7 +1282,11 @@ public boolean onHotReloading(@NonNull HotReloadingParam param) {
 - 默认返回 `false`；
 - 返回 `true` 表示允许热重载；
 - 返回 `false` 表示拒绝热重载；
+- service 触发时，返回 `false` 会得到 `FAILED` 且 message 为 null；
+- 如果回调或后续重载过程抛异常，会得到 `FAILED` 和框架提供的诊断 message；
 - 返回前必须清理模块持有资源。
+
+热重载过程中，框架会在捕获旧 HookHandle 列表前冻结旧代码。冻结后，旧代码继续注册 Hook 会失败；已经开始执行的 Hook 调用继续使用其开始时的 chain 快照。
 
 必须清理：
 
@@ -1285,6 +1296,8 @@ public boolean onHotReloading(@NonNull HotReloadingParam param) {
 - native hooks；
 - JNI global references；
 - 系统或 App 类中保存的模块对象引用。
+
+框架不会因为 Hot Reload 自动调用 `UnregisterNatives`、`JNI_OnUnload` 或 `dlclose`。如果旧 native 线程、callback、hook 或 JNI global reference 仍然存活，之后的崩溃或未定义行为属于模块自身问题。
 
 ### 27.3 onHotReloaded
 
@@ -1305,8 +1318,11 @@ public void onHotReloaded(@NonNull HotReloadedParam param) {
 - 不会自动重新调用 `onModuleLoaded()`；
 - 不会自动重新调用 `onPackageLoaded()`；
 - 不会自动重新调用 `onPackageReady()`；
-- 需要在此处替换旧 Hook 或重新安装必要 Hook；
+- 需要在此处替换旧 Hook、移除不应保留的 Hook，或重新安装必要 Hook；
+- 可优先使用 `HookHandle.replaceHook(...)` 原子替换仍需保留的 Hook；
 - 默认实现会 unhook 所有旧 Hook。
+
+框架会在 `onHotReloaded()` 结束前强引用旧 generation。回调返回或抛出后，框架会释放其持有的旧 generation 引用，但旧 Hook、模块代码、native 资源或运行时自身仍可能继续持有引用；classloader 回收和 native library 卸载不保证立即发生。
 
 ### 27.4 service 触发 Hot Reload
 
@@ -1321,6 +1337,15 @@ if (service.apiVersion >= 102) {
 }
 ```
 
+规则：
+
+- `target` 必须来自 `service.runningTargets`；
+- `hotReloadModule(...)` 只负责校验并提交请求，结果通过 callback 异步返回；
+- 如果框架无法为目标进程提供有效的新模块 generation，会返回 `UNSUPPORTED`；
+- 可选 `data` 会传给旧模块，但只能包含 classloader-neutral 的值；
+- 不要在 `data` 中放模块自定义 `Parcelable` 或 `Serializable` 对象；
+- Hot Reload 不应用于传播配置变化，配置变化应使用 Remote Preferences 和 `SharedPreferences.OnSharedPreferenceChangeListener`。
+
 结果状态：
 
 - `SUCCEEDED`
@@ -1332,7 +1357,9 @@ if (service.apiVersion >= 102) {
 注意：
 
 - `FAILED` 且 message 为 null，通常表示旧模块返回 `false`；
-- 非 null message 表示框架提供的错误诊断。
+- 非 null message 表示框架提供的错误诊断；
+- `IN_PROGRESS` 表示同一目标已有热重载进行中；
+- `PROCESS_DIED` 表示目标进程在热重载过程中退出。
 
 ---
 
@@ -2212,9 +2239,15 @@ system
 
 - API 是否 >= 102；
 - 是否只有一个 Java 入口类；
-- `autoHotReload=true` 是否配置；
+- `autoHotReload=true` 是否配置，或是否通过 service 显式触发；
 - `onHotReloading()` 是否返回 true；
 - 是否旧模块拒绝；
+- service 传入的 target 是否来自 `getRunningTargets()` / `runningTargets`；
+- `hotReloadModule(...)` 的 `data` 是否只包含 classloader-neutral 值；
+- 是否误把配置同步需求写成 Hot Reload；
+- 是否在 `onHotReloaded()` 中重新安装、替换或移除必要 Hook；
+- 是否误以为 `onModuleLoaded()`、`onPackageLoaded()`、`onPackageReady()` 会自动重放；
+- 是否仍有旧 Java/native 线程、外部 callback、native hook 或 JNI global reference 存活；
 - 是否目标进程已死亡；
 - 是否 Hot Reload 已在进行；
 - 是否 native 资源没有清理。
