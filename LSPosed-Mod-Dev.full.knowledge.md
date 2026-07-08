@@ -102,11 +102,20 @@ dependencies {
 }
 ```
 
+如果 Java 模板保留 `androidx.annotation.NonNull`，且目标工程没有其他 AndroidX 依赖提供该注解，可添加：
+
+```kotlin
+dependencies {
+    compileOnly("androidx.annotation:annotation:1.9.1")
+}
+```
+
 说明：
 
 - 使用 `compileOnly`，因为运行时由 LSPosed 框架提供 API；
 - 不要把 `libxposed/api` 打包进模块 APK；
 - `102.0.0` 是当前现代 API 主线版本；
+- `androidx.annotation` 仅用于编译期注解时也建议使用 `compileOnly`；
 - 如果使用更低版本，必须确认对应 API 是否存在。
 
 ### 4.2 service 依赖
@@ -157,6 +166,7 @@ dependencies {
 - `helper` 不是必须依赖；
 - 简单模块可以不用；
 - 只有当用户需要复杂查找、混淆定位、DSL 匹配时才建议使用；
+- `helper` 仓库版本线与 `api`、`service` 不完全同步，生成依赖前必须以 Maven/Gradle 实际可解析版本为准；
 - 不要把 `helper` 当成 `api:102.0.0` 的同版本组件，它当前版本线不同。
 
 ---
@@ -304,9 +314,9 @@ app/src/main/resources/META-INF/xposed/module.prop
 ```properties
 minApiVersion=101
 targetApiVersion=102
-staticScope=false
+staticScope=true
 exceptionMode=protective
-autoHotReload=true
+autoHotReload=false
 ```
 
 字段说明：
@@ -342,7 +352,7 @@ targetApiVersion=102
 ### 10.3 staticScope
 
 ```properties
-staticScope=false
+staticScope=true
 ```
 
 表示是否固定作用域。
@@ -373,7 +383,7 @@ exceptionMode=passthrough
 ### 10.5 autoHotReload
 
 ```properties
-autoHotReload=true
+autoHotReload=false
 ```
 
 API 102+ 可用。
@@ -2087,9 +2097,9 @@ your.package.name.ModuleMain
 ```properties
 minApiVersion=101
 targetApiVersion=102
-staticScope=false
+staticScope=true
 exceptionMode=protective
-autoHotReload=true
+autoHotReload=false
 ```
 
 如果必须使用 API 102 独占能力且不兼容 101：
@@ -2097,10 +2107,12 @@ autoHotReload=true
 ```properties
 minApiVersion=102
 targetApiVersion=102
-staticScope=false
+staticScope=true
 exceptionMode=protective
-autoHotReload=true
+autoHotReload=false
 ```
+
+如果明确实现并支持 Hot Reload，才设置 `autoHotReload=true`。
 
 ### 37.3 scope.list
 
@@ -2967,6 +2979,7 @@ class ModuleEntry : XposedModule() {
                 }
             log(Log.INFO, TAG, "event=hook_registered method=TargetClass.targetMethod")
         } catch (t: Throwable) {
+            installed.set(false)
             log(Log.ERROR, TAG, "event=install_failed", t)
         }
     }
