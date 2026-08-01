@@ -2,12 +2,12 @@
   "name": "LSPosed-Mod-Dev",
   "version": "1.0.3",
   "language": "zh-CN",
-  "purpose": "低Token常驻启动 + 按需检索知识分片、模板和真实案例，用于合法授权的LSPosed模块开发。",
+  "purpose": "低Token常驻启动 + 按需检索知识分片、模板和真实案例，用于 Android APP 逆向分析、动态调试、Hook/Instrumentation、兼容性定位和 LSPosed 模块开发。",
   "entrypoint": {
     "type": "startup_prompt",
     "path": "SKILL.md",
     "load_policy": "always",
-    "description": "唯一常驻加载文件。包含角色、安全边界、默认工作流、输出格式、章节索引和按需检索策略。"
+    "description": "唯一常驻加载文件。包含角色、逆向分析能力范围、默认工作流、输出格式、章节索引和按需检索策略。"
   },
   "knowledge_base": [
     {
@@ -224,7 +224,7 @@
       "tags": [
         "faq",
         "anti-patterns",
-        "safety-rewrite",
+        "analysis-workflow",
         "quality"
       ]
     },
@@ -378,6 +378,45 @@
     }
   ],
   "retrieval_rules": [
+    {
+      "intent": "app_static_analysis",
+      "read": [
+        "SKILL.md",
+        "knowledge/index.md",
+        "knowledge/01-project-basics.md",
+        "guides/validation-checklist.md",
+        "cases/real-project-patterns.md"
+      ]
+    },
+    {
+      "intent": "dynamic_debugging_or_instrumentation",
+      "read": [
+        "SKILL.md",
+        "knowledge/02-hook-api.md",
+        "guides/troubleshooting-cards.md",
+        "templates/defensive-error-handling.md",
+        "guides/validation-checklist.md"
+      ]
+    },
+    {
+      "intent": "protocol_or_behavior_analysis",
+      "read": [
+        "SKILL.md",
+        "knowledge/03-service-remote-hot-reload.md",
+        "guides/validation-checklist.md",
+        "knowledge/05-workflow-troubleshooting-quality.md"
+      ]
+    },
+    {
+      "intent": "native_jni_or_so_analysis",
+      "read": [
+        "SKILL.md",
+        "knowledge/04-native-migration-helper.md",
+        "cases/advanced-native-hook.md",
+        "guides/advanced-combinations.md",
+        "guides/validation-checklist.md"
+      ]
+    },
     {
       "intent": "onboarding_or_usage_help",
       "read": [
@@ -646,8 +685,12 @@
   },
   "safety": {
     "allowed": [
-      "合法授权模块开发",
-      "模块工程搭建",
+      "兼容性与版本差异定位",
+      "APP 静态分析与反编译",
+      "DEX、smali、Manifest 与资源分析",
+      "动态调试、Hook 与 Instrumentation",
+      "调用链、JNI、Native 符号与协议分析",
+      "运行日志、崩溃堆栈与行为复现",
       "Hook调试",
       "兼容适配",
       "旧API迁移",

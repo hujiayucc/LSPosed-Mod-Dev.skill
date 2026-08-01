@@ -114,13 +114,15 @@ Remote Preferences 不同步：检查框架是否支持 `PROP_CAP_REMOTE`、App 
 
 Hot Reload 不生效：检查 API 是否 >= 102、是否只有一个 Java 入口类、`autoHotReload=true` 或 service 显式触发、`onHotReloading()` 是否返回 true、target 是否来自 `runningTargets`、`data` 是否 classloader-neutral、是否误把配置同步写成 Hot Reload、是否需要在 `onHotReloaded()` 中重装 Hook、是否有旧线程/native 资源未清理。
 
-## 回答风格与核心原则
+## 运行时风险与分析分类
 
-回答时先给结论，再给必要确认项，再给实现方案，再给代码，最后给排错清单。不确定 API 名称时明确说明，不伪造不存在的 API，不输出危险用途实现，不把旧 API 当成现代 API，不用资源 Hook，不默认建议 Hook system_server 或 Native Hook，不过度复杂化简单问题。
+按分析影响和稳定性分类：普通 App 静态分析为低风险；普通 App 动态 Hook 和行为观测为中风险；framework 公共 API 观测为中风险；SystemUI、system_server 和 Native Hook 为高风险。高风险路径需要明确版本、加载时机、最小 scope、崩溃保护、日志和恢复方案。
 
-核心原则：现代 API 优先；配置正确优先于写 Hook；scope 和进程必须判断；ClassLoader 是关键；方法签名必须精确；先打日志再优化；Remote Preferences 用于配置；Hot Reload 不用于普通配置同步；Native Hook 仅在明确必要时使用；不帮助绕过检测或未授权修改第三方 App。
+## 输出结构与核心原则
 
-## 高质量模块架构
+回答时先给分析结论，再列输入证据和缺失信息，再给定位路径、实现方案或补丁，最后给验证与回滚步骤。对于逆向任务，标注 APK/DEX/smali/Native/日志/调用栈等证据来源，区分已验证事实、推断和待验证假设；对于代码任务，明确目标文件、API 版本、ClassLoader、进程、Hook 时机、异常模式和失败回退。
+
+核心原则：现代 API 优先；证据优先于猜测；配置正确优先于写 Hook；scope 和进程必须判断；ClassLoader 是关键；方法签名必须精确；先打日志再优化；Remote Preferences 用于配置；Hot Reload 不用于普通配置同步；Native Hook 仅在明确必要且具备崩溃回退时使用。
 
 复杂模块推荐分层：
 
@@ -190,10 +192,10 @@ Hook 回调：参数读取类型安全、条件不满足走原逻辑、返回值
 
 ## Agent 开发工作流增强
 
-需求澄清：目标功能、授权范围、Android 版本、LSPosed/API 版本、目标包名、目标进程、是否有源码、是否有日志、是否需要 UI 配置页、是否需要 Remote Preferences、是否涉及 system_server/SystemUI/native。
+需求澄清：分析目标、输入样本、哈希或版本、Android 版本、LSPosed/API 版本、目标包名、目标进程、是否有源码、是否有反编译代码或日志、是否需要 UI 配置页、是否需要 Remote Preferences、是否涉及 system_server/SystemUI/native、复现步骤和预期输出。
 
-风险分类：普通 App 内行为增强为低到中风险；Hook framework 公共 API 为中风险；Hook SystemUI 为中到高风险；Hook system_server 和 Native Hook 为高风险；绕过检测、风控、反作弊、隐蔽注入必须拒绝。
+风险分类：普通 App 静态分析为低到中风险；普通 App 动态 Hook 和行为观测为中风险；Hook framework 公共 API 为中风险；Hook SystemUI、system_server 和 Native Hook 为高风险。风险判断关注加载范围、运行时副作用、数据暴露、崩溃影响和恢复成本。
 
-方案设计必须包含：API 版本、模块目录结构、元数据配置、生命周期选择、Hook 点理由、ClassLoader 获取方式、失败降级、日志策略、验证步骤、回滚方式。
+方案设计必须包含：分析假设、证据来源、API 版本、模块目录结构、元数据配置、生命周期选择、Hook 点理由、ClassLoader 获取方式、失败降级、日志策略、验证步骤、回滚方式。
 
 代码生成必须先最小骨架，再加入一个 Hook 点，再加入日志，再加入配置读取，再加入异常保护；不一次性生成大量未经验证 Hook；不默认生成 system_server、Native Hook 或旧 API 混用。

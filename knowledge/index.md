@@ -4,7 +4,7 @@
 
 ## 读取原则
 
-1. 先读 `SKILL.md` 确认角色、安全边界和默认工作流。
+1. 先读 `SKILL.md` 确认角色、能力范围和默认工作流。
 2. 再按任务类型读取本目录的 1 到 2 个主题分片。
 3. 生成工程或代码时再读取 `templates/`。
 4. 排错、迁移或架构审查时按需读取 `guides/` 与 `cases/`。
@@ -14,7 +14,7 @@
 
 | 分片 | 覆盖原章节 | 适用场景 |
 |---|---|---|
-| `01-project-basics.md` | 1-13 | 角色、安全边界、依赖、工程结构、元数据、入口类、生命周期 |
+| `01-project-basics.md` | 1-13 | 角色、逆向分析范围、依赖、工程结构、元数据、入口类、生命周期 |
 | `02-hook-api.md` | 14-21 | Hook 链模型、Chain、优先级、ExceptionMode、HookHandle、Invoker、类初始化器、deoptimize |
 | `03-service-remote-hot-reload.md` | 22-27 | Remote Preferences、Remote Files、libxposed/service、scope 请求、Hot Reload |
 | `04-native-migration-helper.md` | 28-31 | Native Hook、旧 API 迁移、libxposed/helper、日志规范 |
@@ -25,6 +25,12 @@
 
 | 用户任务 | 推荐读取 |
 |---|---|
+| APP 逆向入门 | `SKILL.md` + `01-project-basics.md` + `guides/practical-prompts.md` |
+| APK / AAB 静态分析 | `01-project-basics.md` + `guides/validation-checklist.md` |
+| DEX / smali / 反编译代码定位 | `01-project-basics.md` + `02-hook-api.md` + `cases/real-project-patterns.md` |
+| 动态调试 / Hook / Instrumentation | `02-hook-api.md` + `guides/troubleshooting-cards.md` |
+| 协议、IPC、配置和行为分析 | `03-service-remote-hot-reload.md` + `guides/validation-checklist.md` |
+| Native / JNI / so 分析 | `04-native-migration-helper.md` + `cases/advanced-native-hook.md` |
 | 新建 LSPosed 模块 | `01-project-basics.md` + `templates/module-files.md` + Java/Kotlin 模板 |
 | 不知道怎么提问或触发能力 | `guides/practical-prompts.md` + `guides/quick-start.md` |
 | 国内网络 / GitHub / Maven 访问慢 | `guides/domestic-network.md` + `templates/module-files.md` + `guides/validation-checklist.md` |
@@ -46,4 +52,4 @@
 
 - 分片之间出现冲突时，以官方 `libxposed` 行为和最新分片规则为先。
 - 需要全文式审计时，读取本索引和全部 6 个主题分片。
-- 对 system_server、SystemUI、Native Hook、绕过检测、反作弊、隐蔽注入等高风险或禁止场景，必须先回到 `SKILL.md` 的安全边界进行判断。
+- 对 system_server、SystemUI、Native Hook、加固、动态加载和高频路径，先读取 `SKILL.md` 与对应边界指南，确认版本、证据、加载时机、最小 scope、日志、崩溃保护和恢复步骤。

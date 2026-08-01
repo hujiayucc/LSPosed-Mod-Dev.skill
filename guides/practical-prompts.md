@@ -4,17 +4,21 @@
 
 ## 使用原则
 
-- 用户不需要说出内部意图名，只要描述目标、日志或文件即可触发对应能力。
-- 示例输入可以直接照抄，但必须替换目标包名、进程、类名、方法签名和版本信息。
-- 信息不足时，先输出缺失项和最小定位步骤，不直接生成最终 Hook。
-- 高风险场景先读 `guides/special-boundaries.md`，不因为示例存在就默认可实现。
-- 代码生成必须继续遵守最小 scope、结构化日志、错误码和失败回退要求。
+- 用户可以直接描述 APP 逆向、静态分析、动态调试、协议分析、Hook、Instrumentation 或兼容性目标；
+- 示例输入可以直接照抄，但应替换目标包名、进程、类名、方法签名、版本信息和输入样本；
+- 信息不足时，先列出缺失证据和最小定位步骤，再生成最终 Hook 或分析结论；
+- 复杂场景先读 `guides/special-boundaries.md`，确认 SystemUI、system_server、Native、加固、动态加载和高频路径的稳定性要求；
+- 代码生成继续遵守最小 scope、结构化日志、错误码和失败回退要求；
+- 分析结论必须标注证据来源，并区分事实、推断和待验证假设。
 
 ## 触发词速查
 
-| 用户想做 | 可直接这样问 | 优先读取 |
-|---|---|---|
-| 新建模块 | `帮我新建一个 API 102 LSPosed 模块，目标包名是 ...，用 Java/Kotlin` | `templates/module-files.md` + Java/Kotlin 模板 |
+| APP 逆向分析 | `分析这个 APK 的 Manifest、DEX、组件、权限和关键调用链，并给出证据表` | `knowledge/01-project-basics.md` + `guides/validation-checklist.md` |
+| 静态定位 | `从这段反编译代码/smali 中定位功能入口、调用链和关键参数` | `knowledge/01-project-basics.md` + `knowledge/02-hook-api.md` |
+| 动态调试 | `给这个类/方法设计日志 Hook、参数观测和复现路径` | `knowledge/02-hook-api.md` + `guides/troubleshooting-cards.md` |
+| 协议与行为分析 | `分析这段请求、序列化数据或 IPC 调用的字段、状态和触发条件` | `knowledge/03-service-remote-hot-reload.md` + `guides/validation-checklist.md` |
+| Native / JNI 分析 | `分析这个 so 的 JNI 注册、导出符号、调用关系和加载时机` | `knowledge/04-native-migration-helper.md` + `cases/advanced-native-hook.md` |
+
 | 国内网络 | `GitHub/Maven 下载很慢或 Gradle 解析 libxposed 超时，请给国内镜像和离线缓存方案` | `guides/domestic-network.md` |
 | 写 Hook | `我要 Hook ... 类的 ... 方法，签名是 ...，目标进程是 ...` | `knowledge/02-hook-api.md` + Java/Kotlin 模板 |
 | 防御性 Hook | `给这个 Hook 加错误码、结构化日志、参数校验和失败回退` | `templates/defensive-error-handling.md` |
@@ -29,7 +33,7 @@
 | API 102 真实案例 | `按 API 102 真实案例帮我设计这个模块结构` | `cases/api102-real-cases.md` |
 | 发布前检查 | `请按 V1-V6 验证清单检查这个模块能否发布` | `guides/validation-checklist.md` |
 | 架构审查 | `请审查这个模块是否 scope 过大、日志不足或 Hook 点不稳定` | `cases/real-project-patterns.md` + 质量分片 |
-| SystemUI / system_server | `这是授权测试环境的 SystemUI/system_server 需求，请先判断边界和风险` | `guides/special-boundaries.md` |
+| SystemUI / system_server | `这是 SystemUI/system_server 的 APP 兼容、调用链或运行时分析需求，请基于版本和证据给出边界与验证路径` | `guides/special-boundaries.md` |
 | 旧 API 迁移 | `把这段 IXposedHookLoadPackage / XposedHelpers 迁移到 API 102` | `cases/migration-compat.md` |
 
 ## 场景 1：新建 API 102 Java 模块
@@ -74,11 +78,10 @@
 回答应包含：
 
 ```text
-结论：授权测试环境下可协助。
-需要确认：目标 App 版本、类是否混淆、真实 JVM 签名。
+结论：根据证据设计最小 Hook 或观测点。
+需要确认：目标 App 版本、类是否混淆、真实 JVM 签名、反编译片段和复现路径。
 代码：包名/进程 Guard、AtomicBoolean、hook_id、PROTECTIVE、chain.proceed 回退。
-日志：LSM-HOOK-001、LSM-HOOK-004、LSM-SIG-001。
-验证：module_loaded -> install_hook -> hook_hit 三段日志。
+验证：module_loaded -> install_hook -> hook_hit，记录参数类型、返回路径和异常。
 ```
 
 ## 场景 3：模块没有任何日志
@@ -181,7 +184,7 @@
 用户输入：
 
 ```text
-授权测试环境中需要 Native Hook。目标 so 是 libdemo.so，ABI arm64-v8a，符号是 Java_com_example_demo_NativeBridge_check，函数签名是 (JNIEnv*, jobject, jstring)jboolean。请先判断边界，再给最小验证路径。
+APP Native 分析需要目标 so、ABI、符号或可定位函数、函数签名、加载时机和日志。请给 native_init.list、Java fallback、错误码和验证路径。
 ```
 
 推荐读取：
@@ -193,10 +196,9 @@
 回答应包含：
 
 ```text
-结论：信息较完整，但 Native Hook 仍按高风险处理。
-需要确认：目标不是绕过检测、反作弊、隐藏注入或规避安全机制。
-验证：native_init.list、so 打包、ABI、符号导出、加载时机、失败回退。
-不做：无授权、隐藏模块、规避安全机制或默认注入系统关键进程。
+结论：信息完整，可给最小 Native 分析与可回退骨架。
+需要确认：so 打包路径、ABI、符号导出或注册方式、加载时机、Java fallback 和崩溃日志。
+验证：native_init.list、APK so、ABI、符号、native_install、hook_hit、Java fallback、异常恢复。
 ```
 
 ## 场景 8：API 102 真实案例转架构
@@ -274,7 +276,7 @@
 用户输入：
 
 ```text
-这是我自有设备上的 SystemUI 兼容性修复需求，目标 Android 版本是 ...，ROM 是 ...，目标类和方法是 ...。请先判断是否可以继续，不要直接生成高风险 Hook。
+这是 SystemUI 的兼容性、调用链或运行时观测需求，目标 Android 版本是 ...，ROM 是 ...，目标类和方法是 ...。请先给出证据、影响级别、最小 Hook 点和恢复方案。
 ```
 
 推荐读取：
@@ -286,11 +288,11 @@
 回答应包含：
 
 ```text
-结论：可做设计建议 / 暂缓 / 拒绝危险目标。
-风险级别：高。
-需要确认：授权、版本、scope、Hook 点、恢复方案。
-推荐路径：先只读日志观测，再做最小可回退 Hook。
-不做内容：绕过锁屏、权限、安全提示、风控或隐藏注入。
+结论：可做分析、设计或实现；先按影响级别确定最小路径。
+影响级别：高。
+需要确认：版本、scope、反编译或日志证据、Hook 点、恢复方案。
+推荐路径：先静态定位和只读日志观测，再做最小可回退 Hook。
+验证：类加载、Hook 注册、调用路径、异常、禁用模块恢复。
 ```
 
 ## 场景 12：信息不足的按钮 Hook
@@ -310,10 +312,10 @@
 回答应包含：
 
 ```text
-结论：信息不足，不能直接生成可靠 Hook。
-需要确认：目标包名、目标进程、Activity/Fragment、按钮点击方法、类名、方法签名、Android/LSPosed/API 版本、授权范围。
+结论：信息不足，先定位再生成可靠 Hook。
+需要确认：目标包名、目标进程、Activity/Fragment、按钮点击方法、类名、方法签名、Android/LSPosed/API 版本、反编译片段或运行日志。
 可先做：最小日志模块、反编译定位、点击路径日志、候选方法列表。
-下一步：用户提供类名或调用路径后再生成 Hook。
+下一步：提供类名、调用路径或日志后生成 Hook 与验证步骤。
 ```
 
 ## 场景 13：国内网络和依赖解析失败
@@ -368,7 +370,7 @@
 用户输入：
 
 ```text
-授权测试环境需要 Native Hook。目标 so、ABI、符号和函数签名都已确认。请给 Java fallback、CMake、native_init、native_init.list、错误码和验证路径。
+APP Native 分析和混合回退需要目标 so、ABI、符号或可定位函数、函数签名和加载时机。请给 Java fallback、CMake、native_init、native_init.list、错误码和验证路径。
 ```
 
 推荐读取：
@@ -381,10 +383,10 @@
 回答应包含：
 
 ```text
-结论：授权且信息完整时可以给最小可回退骨架。
-前置确认：目标不是绕过检测、反作弊、隐藏注入或规避安全机制。
+结论：信息完整，可给最小可回退骨架。
+输入证据：so、ABI、符号或注册方式、函数签名、加载时机和崩溃日志。
 代码范围：Java 入口路由、System.loadLibrary 失败回退、CMake、native_init、符号查找和 backup。
-验证：APK so、native_init 导出、ABI、符号、native_install、hook_hit、Java fallback。
+验证：APK so、native_init 导出、ABI、符号、native_install、hook_hit、Java fallback、异常恢复。
 ```
 
 ## 场景 16：程序级重试 / 超时 / 降级 Helper
@@ -419,10 +421,10 @@
 还缺这些信息：
 1. 目标包名和目标进程
 2. Android / LSPosed / libxposed API 版本
-3. 目标类名、方法名、参数和返回值
-4. module.prop、java_init.list、scope.list
-5. LSPosed 日志或崩溃堆栈
-6. 授权范围和是否为测试环境
+3. APK/AAB/DEX/smali/Native so 的版本或哈希
+4. 目标类名、方法名、参数和返回值
+5. module.prop、java_init.list、scope.list
+6. LSPosed 日志、崩溃堆栈、调用链或复现步骤
 
 可以先做的最小步骤：
 - 生成只记录 module_loaded 的最小模块；
@@ -435,10 +437,14 @@
 
 - 用户提到“怎么问、示例、触发、普通用户、入口”：读取本文件和 `guides/quick-start.md`。
 - 用户给出具体输入并问“你会怎么回答”：读取本文件和 `guides/interaction-examples.md`。
+- 用户给出 APK/AAB/DEX/smali 并要求静态分析：读取 `knowledge/01-project-basics.md`、`guides/validation-checklist.md` 和 `cases/real-project-patterns.md`。
+- 用户给出运行日志、调用栈或动态行为并要求定位：读取 `knowledge/02-hook-api.md` 和 `guides/troubleshooting-cards.md`。
+- 用户给出协议、IPC、配置或行为样本：读取 `knowledge/03-service-remote-hot-reload.md` 和 `guides/validation-checklist.md`。
+- 用户给出 Native so、JNI 或符号并要求分析：读取 `knowledge/04-native-migration-helper.md`、`cases/advanced-native-hook.md` 和 `guides/special-boundaries.md`。
 - 用户给出代码并要求“更稳、错误码、日志、回退”：读取 `templates/defensive-error-handling.md`。
 - 用户提到“重试、超时、降级、RetryPolicy、TimeoutGuard、延迟安装”：读取 `templates/reliability-helpers.md` 和 `guides/stability-strategy.md`。
 - 用户给出错误代码、崩溃片段、Hook 不触发日志并要求“修复前后对比、真实故障修复过程”：读取 `cases/failure-fix-walkthroughs.md`。
 - 用户给出 APK、metadata 或日志并要求“验证、发布前检查”：读取 `guides/validation-checklist.md`。
 - 用户提到国内网络、GitHub 打不开、Maven/Gradle 超时、离线依赖：读取 `guides/domestic-network.md`。
 - 用户提到多模块共存、Hook 冲突、优先级、scope 交叉：读取 `guides/multi-module-coexistence.md`。
-- 用户提到 SystemUI、system_server、Native 或绕过检测：先读取 `guides/special-boundaries.md`；Native 且合法授权时再读 `cases/advanced-native-hook.md`。
+- 用户提到 SystemUI、system_server、Native、加固或动态加载：先读取 `guides/special-boundaries.md`；Native 再读 `cases/advanced-native-hook.md`。

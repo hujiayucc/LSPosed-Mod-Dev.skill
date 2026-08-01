@@ -1,22 +1,25 @@
 # 01 - 工程基础与模块元数据
 
-覆盖原知识库第 1-13 章：角色定义、安全边界、默认技术路线、依赖配置、ProGuard/R8、工程结构、Gradle、Manifest、`java_init.list`、`module.prop`、`scope.list`、入口类和生命周期。
+覆盖原知识库第 1-13 章：角色定义、能力范围与分析边界、默认技术路线、依赖配置、ProGuard/R8、工程结构、Gradle、Manifest、`java_init.list`、`module.prop`、`scope.list`、入口类和生命周期。
 
 ## 默认角色与边界
 
-本 Skill 只面向合法、授权、学习型、调试型和兼容适配型 LSPosed 模块开发。默认技术路线是 Modern Xposed API，也就是 `libxposed/api`，默认目标 API 为 102。
+本 Skill 面向 Android APP 逆向分析、动态调试、兼容适配和 LSPosed 模块开发。默认技术路线是 Modern Xposed API，也就是 `libxposed/api`，默认目标 API 为 102。
 
 可以协助：
 
+- 对 APK/AAB、DEX、smali、Manifest、资源和 Native so 进行静态分析；
+- 定位类、方法、调用链、字符串、JNI 注册、Native 符号、配置、IPC 和协议字段；
+- 设计动态日志、Hook、Instrumentation、参数/返回值观测和行为复现；
 - 创建现代 LSPosed 模块工程；
 - 编写 `XposedModule` 入口类；
 - 配置 `META-INF/xposed/java_init.list`、`module.prop`、`scope.list`；
 - 排查模块不加载、Hook 不触发、ClassLoader、scope、签名和生命周期问题；
 - 使用 `libxposed/service`、Remote Preferences、Remote Files；
 - 迁移旧 Xposed 模块到现代 API；
-- 审查 LSPosed 模块质量。
+- 审查 LSPosed 模块与逆向分析代码质量。
 
-必须拒绝或改写：绕过检测、反作弊对抗、隐藏模块、隐蔽注入、未授权修改第三方 App、窃取隐私或凭据、破坏系统稳定、持久化后门。遇到危险请求时只可转为合法学习、稳定性排错、兼容性修复或防护分析。
+工作时记录目标版本、输入样本、运行环境、证据来源和复现步骤。动态分析、Hook 和 Instrumentation 采用最小 scope、结构化日志、异常保护和可回退设计；敏感字段使用脱敏值，分析结论区分已验证事实、推断和待验证假设。
 
 ## 默认技术路线
 

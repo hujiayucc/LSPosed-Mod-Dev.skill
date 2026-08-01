@@ -1,6 +1,6 @@
 # LSPosed-Mod-Dev.skill 导入说明
 
-这是一个面向 **LSPosed 模块开发** 的低 Token Skill 包。它保留完整知识，但通过“启动版 + 按需知识库 + 模板 + 案例索引”的结构降低常驻上下文占用。
+这是一个面向 Android APP 逆向分析、动态调试、Hook/Instrumentation、兼容适配和 LSPosed 模块开发的低 Token Skill 包。它保留完整知识，但通过“启动版 + 按需知识库 + 模板 + 案例索引”的结构降低常驻上下文占用。
 
 ## 官方基线
 
@@ -57,7 +57,7 @@ https://github.com/libxposed/helper
 | `guides/practical-prompts.md` | 可直接复制的实操提问、触发词和场景卡 | 不知道怎么触发能力或需要完整示例时读取 |
 | `guides/domestic-network.md` | 国内网络、GitHub、Maven、Gradle 镜像和离线缓存指南 | 依赖解析失败、GitHub 访问慢或离线开发时读取 |
 | `guides/multi-module-coexistence.md` | 多模块共存、scope 交叉、Hook 优先级和冲突排查模板 | 同一目标 App 启用多个模块或 Hook 冲突时读取 |
-| `guides/faq-anti-patterns.md` | FAQ、常见反模式和边界请求改写 | 高频问题、质量判断或安全改写时读取 |
+| `guides/faq-anti-patterns.md` | FAQ、常见反模式和逆向分析任务分流 | 高频问题、质量判断或分析路径选择时读取 |
 | `guides/troubleshooting-cards.md` | 模块不生效、崩溃和高频失败的一页式排错卡片 | 排错时优先读取 |
 | `guides/interaction-examples.md` | 典型输入到推荐回答的样例、边界反馈和信息不足反馈结构 | 不确定回答结构或需要示例时读取 |
 | `guides/advanced-combinations.md` | 多进程、延迟 ClassLoader、Remote Preferences、Hot Reload、Native Hook 等复杂组合场景 | 复杂需求拆解或架构审查时读取 |
@@ -65,7 +65,7 @@ https://github.com/libxposed/helper
 | `guides/validation-checklist.md` | 静态输入、APK 内容、运行日志、回退行为和发布前门禁验证清单 | 验证、发布前检查或自动化审查时读取 |
 | `cases/real-project-patterns.md` | 真实项目架构与质量案例索引 | 架构设计、排错、审查时读取 |
 | `cases/api102-real-cases.md` | API 102 真实案例与场景卡 | 复杂模块、Remote Preferences、Hot Reload、Native Hook 或多进程案例时读取 |
-| `cases/advanced-native-hook.md` | 高级 Native Hook、CMake、native_init 和 Java fallback 示例 | 授权 Native Hook、JNI、ABI 或 native 降级设计时读取 |
+| `cases/advanced-native-hook.md` | 高级 Native Hook、CMake、native_init 和 Java fallback 示例 | Native Hook、JNI、ABI、符号分析或 native 降级设计时读取 |
 | `cases/failure-fix-walkthroughs.md` | 真实故障修复过程与修复前后对比 | 模块不生效、Hook 不触发、崩溃或错误代码修复时读取 |
 | `cases/migration-compat.md` | 旧 API 迁移与兼容案例索引 | 迁移旧模块时读取 |
 | `skill.manifest.json` | 机器可读加载清单 | 项目集成或自动化导入时读取 |
@@ -109,8 +109,13 @@ cases/
 
 | 用户任务 | 推荐读取 |
 |---|---|
-| 不知道如何开始使用 | `guides/quick-start.md` + `guides/practical-prompts.md` + `knowledge/index.md` |
+| APP 逆向入门 | `SKILL.md` + `knowledge/index.md` + `guides/practical-prompts.md` |
+| APK / AAB 静态分析 | `SKILL.md` + `knowledge/01-project-basics.md` + `guides/validation-checklist.md` |
 | 国内网络 / GitHub / Maven 访问慢 | `guides/domestic-network.md` + `templates/module-files.md` + `guides/validation-checklist.md` |
+| DEX / smali / 反编译代码定位 | `knowledge/01-project-basics.md` + `knowledge/02-hook-api.md` + `cases/real-project-patterns.md` |
+| 动态调试 / Hook / Instrumentation | `knowledge/02-hook-api.md` + `guides/troubleshooting-cards.md` + Java/Kotlin 模板 |
+| Native / JNI / so 分析 | `knowledge/04-native-migration-helper.md` + `cases/advanced-native-hook.md` + `guides/advanced-combinations.md` |
+| 协议、IPC、配置和行为分析 | `knowledge/03-service-remote-hot-reload.md` + `guides/validation-checklist.md` |
 | 新建 LSPosed 模块 | `SKILL.md` + `knowledge/01-project-basics.md` + `templates/module-files.md` + Java/Kotlin 模板 |
 | 写 Hook 代码 | `SKILL.md` + `knowledge/02-hook-api.md` + Java/Kotlin 模板；复杂场景加 `templates/defensive-error-handling.md` |
 | Remote Preferences | `knowledge/03-service-remote-hot-reload.md` |
@@ -121,7 +126,6 @@ cases/
 | 模块不生效 | `guides/troubleshooting-cards.md` + `guides/validation-checklist.md` + `knowledge/05-workflow-troubleshooting-quality.md` + `cases/failure-fix-walkthroughs.md` + `cases/real-project-patterns.md` |
 | 高频问题 / 反模式判断 | `guides/faq-anti-patterns.md` |
 | 需要交互样例或回答结构 | `guides/interaction-examples.md` + `guides/practical-prompts.md` |
-| 需要可复制的实操提问 | `guides/practical-prompts.md` + `guides/quick-start.md` |
 | 错误代码修复前后对比 | `cases/failure-fix-walkthroughs.md` + `guides/troubleshooting-cards.md` + `templates/defensive-error-handling.md` |
 | API 102 真实案例 | `cases/api102-real-cases.md` + `knowledge/06-cases-templates.md` |
 | 复杂场景组合 | `guides/advanced-combinations.md` + `cases/api102-real-cases.md` + 对应知识分片或模板 |
@@ -140,20 +144,11 @@ cases/
 - 案例只在需要架构推理、排错或迁移时加载；
 - 如果平台会自动索引目录下所有 Markdown，可以索引全部文件，但仍只把 `SKILL.md` 作为启动提示词。
 
-## 安全策略
+## 分析与工程边界
 
-本 Skill 只用于合法授权的 LSPosed 模块开发、调试、兼容适配、学习和代码审查。
+本 Skill 支持 Android APP 的静态分析、反编译、DEX/smali/Manifest/资源检查、动态调试、Hook/Instrumentation、调用链定位、Native/JNI 分析、协议与行为分析，以及基于分析结果的兼容适配和 LSPosed 模块开发。
 
-必须拒绝：
-
-- 绕过检测；
-- 反作弊对抗；
-- 隐蔽注入；
-- 未授权修改第三方 App；
-- 窃取隐私或凭据；
-- 恶意控制设备；
-- 破坏系统稳定；
-- 持久化后门。
+分析时保留以下工程要求：输入样本和版本可追溯，结论标注证据来源，运行日志脱敏，Hook 保持最小 scope、可观测和可回退；system_server、SystemUI、Native、加固和高频路径需要额外的崩溃保护、恢复步骤和版本对照。
 
 ## 发布前核对
 

@@ -1,6 +1,6 @@
 # FAQ 与常见反模式速查
 
-这个文件把分散在安全边界、案例、迁移和排错分片里的高频问题集中到一处。遇到不确定请求时，先用这里判断方向，再按需读取 `knowledge/` 分片。
+这个文件把分散在能力范围、案例、迁移和排错分片里的高频问题集中到一处。遇到不确定请求时，先用这里判断方向，再按需读取 `knowledge/` 分片。
 
 ## FAQ
 
@@ -50,20 +50,22 @@
 | 旧 `XSharedPreferences` 直迁 | 新系统不可用或不稳定 | 使用 `libxposed/service` 与 Remote Preferences |
 | Native Hook 不校验 ABI | 加载失败或崩溃 | 检查 ABI、so 名称、符号和加载日志 |
 
-## 边界请求改写
+## 逆向分析任务分流
 
-| 用户原始方向 | 处理方式 | 可改写方向 |
+| 用户任务 | 先读取 | 首要产出 |
 |---|---|---|
-| 绕过检测、反作弊、风控 | 拒绝 | 模块稳定性排错、日志诊断、防护分析 |
-| 窃取隐私、凭据、聊天记录 | 拒绝 | 授权测试环境下的数据访问边界说明 |
-| 隐蔽注入、隐藏模块 | 拒绝 | 合法模块可观测性和审计设计 |
-| 未授权修改第三方 App | 拒绝 | 自有 App、测试 App 或授权环境兼容适配 |
-| system_server 高风险 Hook | 先确认合法目的和回退方案 | 最小 Hook、日志、失败保护和验证流程 |
+| APK / AAB 静态分析 | `knowledge/01-project-basics.md` + `guides/validation-checklist.md` | 包结构、Manifest、组件、权限、DEX/资源和证据表 |
+| 反编译代码 / smali 定位 | `knowledge/01-project-basics.md` + `knowledge/02-hook-api.md` | 类、方法、调用链、参数和版本差异 |
+| 动态调试 / Hook | `knowledge/02-hook-api.md` + `guides/troubleshooting-cards.md` | 最小日志 Hook、参数/返回值观测、复现路径 |
+| Native / JNI / so 分析 | `knowledge/04-native-migration-helper.md` + `cases/advanced-native-hook.md` | ABI、符号、JNI 注册、加载时机和 Java fallback |
+| 协议 / IPC / 行为分析 | `knowledge/03-service-remote-hot-reload.md` + `guides/validation-checklist.md` | 字段、状态机、触发条件和验证样本 |
+| SystemUI / system_server | `guides/special-boundaries.md` + `guides/advanced-combinations.md` | 版本证据、最小 scope、恢复方案和影响评估 |
 
 ## 快速判断规则
 
-- 目标不合法时，先拒绝危险目标，再给合法替代方向；
-- 目标合法但信息不足时，先索要包名、scope、日志、版本和签名；
+- 信息不足时，先列出包名、进程、版本、类名、方法签名、输入样本和日志缺口；
+- 静态定位优先于猜测，动态 Hook 优先从只读日志和最小观测开始；
 - 目标涉及复杂生命周期时，优先读取 `knowledge/01-project-basics.md` 和 `knowledge/02-hook-api.md`；
 - 目标涉及旧 API 时，先读取 `cases/migration-compat.md`；
-- 目标涉及架构质量时，先读取 `cases/real-project-patterns.md`。
+- 目标涉及架构质量时，先读取 `cases/real-project-patterns.md`；
+- 所有运行时修改都记录 Hook ID、命中条件、跳过原因、异常和回退结果。

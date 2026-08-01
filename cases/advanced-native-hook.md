@@ -2,14 +2,14 @@
 
 本文件补充 `knowledge/04-native-migration-helper.md` 中的 native_init 基础说明，提供一个可审查的高级示例骨架：Java 入口先做包名、进程和风险判断，再按需加载 native so；C++ 层实现 `native_init`、延迟 so 回调、符号查找、Hook 安装、backup 调用和失败降级。
 
-本示例只用于合法授权测试、兼容性修复和学习型验证。涉及绕过检测、反作弊、隐藏注入、未授权修改第三方 App、窃取数据或破坏系统稳定的请求，必须拒绝或改写。
+本示例面向 APP 静态分析、动态调试、兼容性定位和 LSPosed Native Hook 工程。涉及系统稳定性、数据处理或高影响路径时，必须保留版本记录、最小 scope、崩溃保护、日志脱敏和回滚方案。
 
 ## 前置条件
 
 生成真实 Native Hook 前必须确认：
 
 ```text
-permission=<授权范围或测试环境>
+analysis_scope=<分析范围或测试环境>
 target_package=<目标包名>
 target_process=<目标进程>
 target_so=<目标 so 名称>

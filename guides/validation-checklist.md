@@ -25,7 +25,7 @@ lsposed_version=<LSPosed 版本>
 libxposed_api=<目标 API 版本>
 scope=<scope.list 内容>
 hook_target=<类名/方法/签名>
-permission=<授权范围或测试环境>
+analysis_scope=<分析范围或测试环境>
 fallback=<失败回退方式>
 ```
 
