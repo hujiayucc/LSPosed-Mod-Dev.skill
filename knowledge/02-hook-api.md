@@ -11,7 +11,7 @@ Method method = targetClass.getDeclaredMethod("targetMethod", String.class);
 
 hook(method)
     .setPriority(PRIORITY_DEFAULT)
-    .setExceptionMode(ExceptionMode.PROTECTIVE)
+    .setExceptionMode(ExceptionMode.DEFAULT)
     .intercept(chain -> {
         Object result = chain.proceed();
         return result;
@@ -90,11 +90,9 @@ PRIORITY_LOWEST
 
 ## ExceptionMode
 
-`ExceptionMode.DEFAULT` 跟随 `module.prop` 中的全局配置。
+`ExceptionMode.DEFAULT` 跟随 `module.prop` 中的全局配置。默认 `module.prop` 使用 `exceptionMode=protective`，因此稳定性优先的模块通常使用 `DEFAULT`。
 
-`ExceptionMode.PROTECTIVE` 推荐默认使用。Hooker 自身异常会被捕获并记录，尽量让目标调用继续，适合稳定性优先的模块。它不能捕获 `chain.proceed()` 中目标方法自身抛出的异常。
-
-`ExceptionMode.PASSTHROUGH` 适合调试，会让 Hooker 异常继续向上传播，有助于暴露错误，但可能导致目标 App 崩溃，发布版本不建议默认使用。
+`ExceptionMode.PASSTHROUGH` 适合调试，会让 Hooker 异常继续向上传播，有助于暴露错误，但可能导致目标 App 崩溃。Java API 枚举没有 `PROTECTIVE` 常量；`protective` 是 `module.prop` 的字符串配置值，不是 Java 枚举值。
 
 ## HookHandle
 

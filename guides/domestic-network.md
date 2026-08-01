@@ -164,9 +164,85 @@ obtained_at=<获取时间>
 风险：不要使用来源不明的 fork、jar 或修改过坐标的依赖。
 ```
 
-## 与其他文件配合
-
-- 新建模块：`templates/module-files.md`、`knowledge/01-project-basics.md`。
+- 与其他文件配合：`templates/module-files.md`、`knowledge/01-project-basics.md`。
 - 依赖和版本验证：`guides/validation-checklist.md`。
 - 发布说明和官方基线：`README.md`。
 - API 102 代码模板：`templates/java-api102.md`、`templates/kotlin-api102.md`。
+
+## 快速配置与验证工具
+
+### 一键镜像配置（国内网络优化）
+
+当用户确认需要使用国内镜像时，可以提供完整的 settings.gradle.kts 配置：
+
+```kotlin
+// settings.gradle.kts - 国内网络优化配置
+pluginManagement {
+    repositories {
+        maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
+        maven { url = uri("https://maven.aliyun.com/repository/google") }
+        maven { url = uri("https://maven.aliyun.com/repository/public") }
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        maven { url = uri("https://maven.aliyun.com/repository/google") }
+        maven { url = uri("https://maven.aliyun.com/repository/public") }
+        maven { url = uri("https://mirrors.cloud.tencent.com/nexus/repository/maven-public/") }
+        google()
+        mavenCentral()
+    }
+}
+```
+
+### 依赖验证命令
+
+```bash
+# 1. 验证 libxposed API 可解析
+./gradlew :app:dependencies --configuration compileClasspath | grep libxposed
+
+# 2. 测试镜像可用性
+curl -I https://maven.aliyun.com/repository/public/io/github/libxposed/api/102.0.0/api-102.0.0.pom
+
+# 3. 验证离线构建（需要先在线构建一次）
+./gradlew clean :app:assembleDebug --offline
+
+# 4. 检查 APK 中的依赖
+unzip -l app/build/outputs/apk/debug/app-debug.apk | grep META-INF/xposed
+```
+
+### 离线包准备脚本
+
+为离线环境准备依赖缓存：
+
+```bash
+#!/bin/bash
+# prepare-offline-deps.sh
+
+GRADLE_HOME="${HOME}/.gradle"
+CACHE_DIR="${GRADLE_HOME}/caches/modules-2/files-2.1"
+
+echo "正在下载 libxposed 依赖..."
+./gradlew :app:dependencies --refresh-dependencies
+
+echo "复制缓存到离线包..."
+mkdir -p offline-deps
+cp -r "${CACHE_DIR}/io.github.libxposed" offline-deps/
+
+echo "生成依赖清单..."
+find offline-deps -type f -name "*.jar" -o -name "*.pom" | tee offline-manifest.txt
+
+echo "离线包准备完成：offline-deps/"
+```
+
+使用离线包：
+
+```bash
+# 在离线设备上解压并链接到 Gradle 缓存
+cp -r offline-deps/* ~/.gradle/caches/modules-2/files-2.1/
+```

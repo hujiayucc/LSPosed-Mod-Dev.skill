@@ -69,3 +69,147 @@
 - 目标涉及旧 API 时，先读取 `cases/migration-compat.md`；
 - 目标涉及架构质量时，先读取 `cases/real-project-patterns.md`；
 - 所有运行时修改都记录 Hook ID、命中条件、跳过原因、异常和回退结果。
+
+## 开发效率工具集
+
+### 快速调试技巧
+
+**1. 实时 Hook 日志查看**
+
+```bash
+# 实时过滤模块日志（假设 TAG=LSPosedModule）
+adb logcat -s LSPosedModule:* | grep "event="
+
+# 只看 Hook 安装和触发
+adb logcat -s LSPosedModule:* | grep -E "(install_hook|hook_hit)"
+
+# 只看错误和警告
+adb logcat -s LSPosedModule:W LSPosedModule:E
+
+# 保存完整日志到文件
+adb logcat -s LSPosedModule:* > module_debug.log
+```
+
+**2. 快速复现 Hook**
+
+使用 `am` 命令快速触发目标 Activity/Service：
+
+```bash
+# 启动目标 App 主 Activity
+adb shell am start -n com.example.target/.MainActivity
+
+# 发送广播触发 Hook
+adb shell am broadcast -a com.example.target.ACTION_TEST
+
+# 启动 Service
+adb shell am startservice -n com.example.target/.TargetService
+
+# 强停后重启（触发完整初始化）
+adb shell am force-stop com.example.target && \
+adb shell am start -n com.example.target/.MainActivity
+```
+
+**3. 模块热重载（需要框架支持）**
+
+如果模块开启了 `autoHotReload=true`：
+
+```bash
+# 1. 编译并安装新 APK
+./gradlew :app:assembleDebug && \
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+
+# 2. 触发框架重载（方法因框架而异）
+# LSPosed: 在管理界面重新勾选模块
+# 或者通过 adb 发送特定广播（需查看框架文档）
+```
+
+### APK 快速分析工具链
+
+```bash
+# 1. 查看 APK 基本信息
+aapt dump badging target.apk | grep -E "(package|launchable-activity|uses-permission)"
+
+# 2. 提取并反编译 DEX
+unzip target.apk classes.dex
+d2j-dex2jar classes.dex
+jd-gui classes-dex2jar.jar
+
+# 3. 查看 Manifest
+aapt dump xmltree target.apk AndroidManifest.xml
+
+# 4. 查找目标类和方法（从反编译代码中）
+find decompiled-src -name "*.java" | xargs grep -l "targetMethod"
+
+# 5. 快速定位字符串
+strings classes.dex | grep "关键字符串"
+```
+
+### Hook 代码生成器（命令行）
+
+快速生成基础 Hook 代码框架：
+
+```bash
+#!/bin/bash
+# generate-hook.sh <package> <class> <method>
+
+PACKAGE=$1
+CLASS=$2
+METHOD=$3
+
+cat <<EOF
+@Override
+public void onPackageLoaded(XposedInterface.PackageLoadedParam param) {
+    if (!"${PACKAGE}".equals(param.getPackageName())) return;
+    if (!param.isFirstPackage()) return;
+
+    try {
+        Class<?> clazz = param.getClassLoader().loadClass("${CLASS}");
+        var method = clazz.getDeclaredMethod("${METHOD}");
+        
+        hook(method)
+            .setId("${METHOD}_hook")
+            .setExceptionMode(XposedInterface.ExceptionMode.DEFAULT)
+            .intercept(chain -> {
+                log("LSM-HOOK-004 event=hook_hit method=${METHOD}");
+                return chain.proceed();
+            });
+            
+        log("LSM-HOOK-001 event=install_hook target=${CLASS}.${METHOD} result=ok");
+    } catch (Throwable t) {
+        log("LSM-HOOK-003 event=install_hook target=${CLASS}.${METHOD} result=fail", t);
+    }
+}
+EOF
+```
+
+使用：
+```bash
+./generate-hook.sh com.example.target com.example.target.MainActivity onCreate
+```
+
+### 性能分析与优化建议
+
+**Hook 性能检查清单**
+
+```text
+☐ Hook 数量是否超过 50 个？（建议按需延迟安装）
+☐ 是否在热路径上执行反射？（建议缓存 Method/Field）
+☐ 是否在 Hook 回调中执行 IO 或网络？（移到后台线程）
+☐ 是否记录大量重复日志？（采样或降级）
+☐ scope 是否过大？（精确到目标包名）
+☐ 是否全局 Hook Activity 生命周期？（按需 Hook 特定类）
+```
+
+**内存泄漏检查**
+
+```java
+// 避免持有 Activity/Context 引用
+private static WeakReference<Context> contextRef;
+
+// 避免静态持有 ClassLoader
+// 错误示例：private static ClassLoader cachedLoader;
+// 正确示例：使用 WeakHashMap<ClassLoader, ?>
+
+// Hook 回调中避免创建大量临时对象
+// 复用 StringBuilder、数组等
+```

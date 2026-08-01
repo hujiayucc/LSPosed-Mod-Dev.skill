@@ -57,11 +57,11 @@
 - `module.prop` 使用 `minApiVersion=102`、`targetApiVersion=102`、`staticScope=true`、`exceptionMode=protective`、`autoHotReload=false`；
 - `java_init.list` 指向唯一入口类；
 - 多进程模块先写进程路由表，不在所有进程盲目安装 Hook；
-- system_server 和 SystemUI Hook 单独列为高风险路径；
-- `hook(method).setId(...).setExceptionMode(PROTECTIVE).intercept(...)`；
+- system_server 和 SystemUI Hook 单独列为高影响路径；
+- `hook(method).setId(...).setExceptionMode(DEFAULT).intercept(...)`；
 - 混淆目标可使用 DexKit 或 helper 辅助定位，但不能代替清晰 Hook 条件设计；
 - 对每个 Hook 安装点使用布尔锁或同步块防止重复安装；
-- `scope.list` 出现 `system` 或 `com.android.systemui` 时必须解释原因和风险；
+- `scope.list` 出现 `system` 或 `com.android.systemui` 时记录目标进程、版本和回退策略；
 - 发布前验证 APK 内 `META-INF/xposed` 元数据完整。
 
 ## 可转化为通用 Skill 规则
@@ -71,10 +71,10 @@
 - 每个 Hook 都应有注册日志、命中日志、跳过原因日志、异常日志；
 - 每个 Hook 都应能在条件不满足时安全回退到原始逻辑；
 - 每个复杂模块都应提供手动测试计划和排错文档；
-- API 102 项目优先使用 `ExceptionMode.PROTECTIVE`；
-- 多进程模块必须先写进程路由表；
+- API 102 项目使用 `ExceptionMode.DEFAULT` 跟随 `module.prop` 的 `exceptionMode` 配置；
+- 多进程模块先写进程路由表；
 - DexKit/helper 只能用于定位混淆目标，不能代替清晰的 Hook 条件设计；
-- 发布前必须验证 APK 内 `META-INF/xposed` 元数据完整。
+- 发布前验证 APK 内 `META-INF/xposed` 元数据完整。
 
 ## API 102 Java 入口模板要点
 
@@ -87,7 +87,7 @@
 - `onPackageReady()` 判断目标包和 `isFirstPackage()`；
 - `installHooks(ClassLoader)` 中同步安装；
 - 找类、找方法、`method.setAccessible(true)`；
-- `hook(method).setId(...).setExceptionMode(PROTECTIVE).intercept(...)`；
+- `hook(method).setId(...).setExceptionMode(DEFAULT).intercept(...)`；
 - 参数类型检查，不符合时 `chain.proceed()`；
 - 成功、类缺失、方法缺失、安装失败都有日志。
 
@@ -102,7 +102,7 @@
 - `installHooks(classLoader)` 用 `compareAndSet(false, true)`；
 - `classLoader.loadClass(...)` 和 `getDeclaredMethod(...)`；
 - `method.isAccessible = true`；
-- `setId(...)`、`setExceptionMode(PROTECTIVE)`、`intercept`；
+- `setId(...)`、`setExceptionMode(DEFAULT)`、`intercept`；
 - 参数安全转换，不符合条件走原逻辑；
 - 失败时重置安装状态并记录错误。
 

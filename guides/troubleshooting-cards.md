@@ -51,7 +51,7 @@ event=install_hook package=<pkg> process=<process> class=<class> method=<method>
 
 处理策略：
 
-- 使用 `ExceptionMode.PROTECTIVE`；
+- 使用 `ExceptionMode.DEFAULT`，并在 `module.prop` 里设置 `exceptionMode=protective`；
 - Hook 回调内部只做最小逻辑；
 - 复杂逻辑移到可测试函数；
 - 出错时记录并回退原始返回值或跳过修改。
@@ -104,7 +104,7 @@ event=install_hook package=<pkg> process=<process> class=<class> method=<method>
 - 目标 so 和目标符号是否已加载；
 - 失败时是否有 Java 层和 native 层日志。
 
-不要在信息不足时生成 Native Hook。必须先确认目标 so、符号、函数签名、ABI 和合法目的。
+信息不完整时，先按已知字段生成 Native/JNI 定位和最小观测步骤：枚举目标 so、分析 JNI 注册与加载顺序、记录候选符号和调用栈；确认函数签名后再扩展为 Native Hook。
 
 ## 卡片 7：旧 API 迁移失败
 

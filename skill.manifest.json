@@ -1,6 +1,6 @@
 {
   "name": "LSPosed-Mod-Dev",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "language": "zh-CN",
   "purpose": "低Token常驻启动 + 按需检索知识分片、模板和真实案例，用于 Android APP 逆向分析、动态调试、Hook/Instrumentation、兼容性定位和 LSPosed 模块开发。",
   "entrypoint": {
@@ -99,6 +99,21 @@
         "project-patterns"
       ],
       "description": "真实案例提炼、API 102 模板增强和案例转化规则。"
+    },
+    {
+      "path": "knowledge/07-libxposed-api102-reference.md",
+      "type": "knowledge_shard",
+      "load_policy": "retrieve_on_api102_reference_or_apk_to_hook",
+      "priority": 89,
+      "tags": [
+        "api102",
+        "official-reference",
+        "lifecycle",
+        "hook-api",
+        "metadata",
+        "apk-to-hook"
+      ],
+      "description": "libxposed API 102 官方依赖、元数据、生命周期、Hook 链、Hot Reload 与 APK-to-Hook 路由参考。"
     }
   ],
   "resources": [
@@ -375,6 +390,19 @@
         "api100",
         "api101"
       ]
+    },
+    {
+      "path": "cases/complete-project-example.md",
+      "type": "case_index",
+      "load_policy": "retrieve_on_complete_project_example",
+      "priority": 88,
+      "tags": [
+        "complete-example",
+        "project-template",
+        "gradle",
+        "build-verification",
+        "api102"
+      ]
     }
   ],
   "retrieval_rules": [
@@ -384,8 +412,23 @@
         "SKILL.md",
         "knowledge/index.md",
         "knowledge/01-project-basics.md",
+        "knowledge/07-libxposed-api102-reference.md",
         "guides/validation-checklist.md",
         "cases/real-project-patterns.md"
+      ]
+    },
+    {
+      "intent": "api102_reference_or_apk_to_hook",
+      "read": [
+        "SKILL.md",
+        "knowledge/01-project-basics.md",
+        "knowledge/07-libxposed-api102-reference.md",
+        "guides/practical-prompts.md",
+        "guides/validation-checklist.md",
+        "templates/module-files.md",
+        "templates/java-api102.md",
+        "templates/kotlin-api102.md",
+        "cases/complete-project-example.md"
       ]
     },
     {
@@ -393,6 +436,7 @@
       "read": [
         "SKILL.md",
         "knowledge/02-hook-api.md",
+        "knowledge/07-libxposed-api102-reference.md",
         "guides/troubleshooting-cards.md",
         "templates/defensive-error-handling.md",
         "guides/validation-checklist.md"
@@ -412,6 +456,7 @@
       "read": [
         "SKILL.md",
         "knowledge/04-native-migration-helper.md",
+        "knowledge/07-libxposed-api102-reference.md",
         "cases/advanced-native-hook.md",
         "guides/advanced-combinations.md",
         "guides/validation-checklist.md"
@@ -489,9 +534,11 @@
       "read": [
         "SKILL.md",
         "knowledge/01-project-basics.md",
+        "knowledge/07-libxposed-api102-reference.md",
         "templates/module-files.md",
         "templates/java-api102.md",
-        "templates/kotlin-api102.md"
+        "templates/kotlin-api102.md",
+        "cases/complete-project-example.md"
       ]
     },
     {
@@ -500,6 +547,7 @@
         "SKILL.md",
         "knowledge/01-project-basics.md",
         "knowledge/02-hook-api.md",
+        "knowledge/07-libxposed-api102-reference.md",
         "templates/java-api102.md",
         "templates/kotlin-api102.md",
         "templates/defensive-error-handling.md"
@@ -525,6 +573,7 @@
       "intent": "native_hook",
       "read": [
         "knowledge/04-native-migration-helper.md",
+        "knowledge/07-libxposed-api102-reference.md",
         "cases/advanced-native-hook.md",
         "cases/api102-real-cases.md",
         "guides/advanced-combinations.md",
@@ -556,7 +605,8 @@
       "read": [
         "cases/api102-real-cases.md",
         "cases/real-project-patterns.md",
-        "knowledge/06-cases-templates.md"
+        "knowledge/06-cases-templates.md",
+        "knowledge/07-libxposed-api102-reference.md"
       ]
     },
     {
@@ -660,6 +710,7 @@
         "knowledge/04-native-migration-helper.md",
         "knowledge/05-workflow-troubleshooting-quality.md",
         "knowledge/06-cases-templates.md",
+        "knowledge/07-libxposed-api102-reference.md",
         "guides/practical-prompts.md",
         "guides/domestic-network.md",
         "guides/multi-module-coexistence.md",

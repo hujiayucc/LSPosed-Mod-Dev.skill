@@ -6,8 +6,8 @@
 
 - 真实项目名只用于说明工程结构、API 用法、日志、排错和质量模式。
 - 未确认来源的内容只能写成“场景卡”或“模板化模式”，不能写成真实仓库案例。
-- 涉及检测、反作弊、风控、模块隐藏或第三方 App 修改机制时，先区分静态分析、动态观测、兼容修复与行为验证，输出可复现的证据链和最小实现范围。
-- system_server、SystemUI、Native Hook 先确认版本、影响等级、必要性、回退策略和验证环境后进入设计。
+- 涉及检测、反作弊、风控、模块隐藏或第三方 App 修改机制时，先拆分静态定位、动态观测、兼容修复和行为验证，输出可复现的证据链和最小实现范围。
+- system_server、SystemUI、Native Hook 先记录版本、影响等级、必要性、回退策略和验证环境，再选择分析、观测或实现路径。
 
 ## 案例 1：官方 libxposed/example 基线
 
@@ -48,26 +48,26 @@ API 定位：API 102 复杂场景参考。
 可学习点：
 
 - `targetApiVersion=102`；
-- `exceptionMode=protective`；
+- `exceptionMode=protective` 是 module.prop 字符串配置；Java 代码使用 `ExceptionMode.DEFAULT` 跟随它；
 - 多进程先路由，再安装 Hook；
-- SystemUI / system_server 路径单独标记为高风险；
-- 使用 `hook(method).setId(...).setExceptionMode(PROTECTIVE).intercept(...)`；
+- SystemUI / system_server 路径单独标记影响等级；
+- 使用 `hook(method).setId(...).setExceptionMode(DEFAULT).intercept(...)`；
 - 对 Hook 安装点使用锁或状态位，避免重复安装；
 - 使用结构化日志记录安装、跳过、命中、异常和回退；
 - 文档包含构建、发布、测试和排错说明。
 
-不可照搬点：
+不可直接照搬：
 
 - 具体业务 Hook 目标；
 - 与特定 ROM、系统组件或业务协议绑定的逻辑；
-- 未经授权的 SystemUI / system_server 修改路径。
+- 未经证据验证的 SystemUI / system_server 修改路径。
 
 可转化规则：
 
-- 复杂 API 102 模块必须先列出进程路由表；
+- 复杂 API 102 模块先列出进程路由表；
 - 每个进程只安装该进程需要的 Hook；
-- system_server / SystemUI 不作为默认建议，只作为明确授权后的高风险分支；
-- 每个 Hook 都必须有 Hook ID、异常保护、跳过原因和回退路径。
+- system_server / SystemUI 路径先从静态定位和观测开始，再按版本证据扩展；
+- 每个 Hook 都有 Hook ID、异常模式、跳过原因和回退路径。
 
 最小日志集：
 
@@ -149,9 +149,9 @@ config_source=unavailable -> 记录 service 状态并回退默认值
 
 来源类型：LSPosed Native Hook 规则 + 真实模块风险经验抽象。
 
-适用场景：Java Hook 无法覆盖目标逻辑，且用户能提供目标 so、符号、ABI、函数签名和授权目的。
+适用场景：Java Hook 无法覆盖目标逻辑，且已有目标 so、符号、ABI、函数签名或加载时机中的任意静态或动态线索。
 
-必须确认：
+优先记录的证据：
 
 - 目标 so 名称；
 - 目标符号或可定位函数；
@@ -159,21 +159,22 @@ config_source=unavailable -> 记录 service 状态并回退默认值
 - 函数签名；
 - 加载时机；
 - 崩溃回退策略；
-- 分析范围与实验环境。
+- 分析范围与验证环境。
 
-补齐证据或暂缓生成：
+证据不完整时的推进路径：
 
-- 只说“Hook native”但没有符号和签名；
-- 目标机制涉及检测、反作弊、隐藏注入或安全防护，但尚未区分观测、兼容修复与行为验证；
-- 没有崩溃回退和验证环境；
-- 希望默认扩大到 system_server 或系统关键进程。
+- 只有“Hook native”描述时，先从 APK 的 `lib/<abi>/`、JNI 注册、`System.loadLibrary` 和调用栈定位候选 so、符号与加载点；
+- 目标机制涉及检测、反作弊、隐藏注入或安全防护时，先区分观测、兼容修复与行为验证，并记录每一项的触发证据；
+- 缺少崩溃回退和验证环境时，先生成可卸载的 Java 层最小观测、`native_init.list` 打包检查与恢复步骤；
+- system_server 或系统关键进程先单独记录版本、进程和回退条件，再按已确认调用链安装最小 Hook。
 
 推荐回答结构：
 
 ```text
-结论：当前信息不足，先补齐证据，再生成 Native Hook。
-缺失信息：目标 so、符号、ABI、函数签名、加载时机、回退策略。
-可先做：Java 层最小入口、System.loadLibrary 日志、native_init.list 验证。
+结论：先按现有证据生成 Native/JNI 定位与最小观测路径。
+待验证：目标 so、符号、ABI、函数签名、加载时机、回退策略。
+可先做：枚举 lib 目录、分析 JNI 注册、记录 System.loadLibrary、验证 native_init.list。
+后续实现：确认函数签名后安装 Native Hook；失败时保留 Java Hook 或日志观测路径。
 验证：确认 so 打包、ABI 匹配、native_init 被调用、失败时 Java Hook 可安全跳过。
 ```
 
@@ -217,7 +218,7 @@ process=*                     route=skip      hooks=none
 ```text
 案例类型：官方基线 / 真实项目 / 场景卡
 适用范围：Java / Kotlin / Remote Preferences / Hot Reload / Native / 多进程
-前置条件：scope、进程、API 版本、目标类、方法签名、授权范围
+前置输入：scope、进程、API 版本、目标类、方法签名、现有样本或运行证据
 可复用规则：工程结构、生命周期、Hook 安装、日志、回退
 不可照搬点：业务逻辑、敏感 Hook、过时 API、项目特定假设
 验证路径：安装、启用 scope、强停目标、查看日志、触发功能、回退测试

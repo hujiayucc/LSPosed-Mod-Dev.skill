@@ -17,13 +17,16 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class ModuleEntry : XposedModule() {
     private val installed = AtomicBoolean(false)
+    @Volatile
+    private var loadedProcess: String? = null
 
     override fun onModuleLoaded(param: XposedModuleInterface.ModuleLoadedParam) {
+        loadedProcess = param.processName
         log(Log.INFO, TAG, "event=module_loaded process=${param.processName} api=${getApiVersion()} framework=${getFrameworkName()}")
     }
 
     override fun onPackageReady(param: XposedModuleInterface.PackageReadyParam) {
-        if (param.packageName != TARGET_PACKAGE || !param.isFirstPackage) return
+        if (param.packageName != TARGET_PACKAGE || loadedProcess != TARGET_PROCESS) return
         installHooks(param.classLoader)
     }
 
@@ -40,7 +43,7 @@ class ModuleEntry : XposedModule() {
 
             hook(method)
                 .setId("target_method_hook")
-                .setExceptionMode(XposedInterface.ExceptionMode.PROTECTIVE)
+                .setExceptionMode(XposedInterface.ExceptionMode.DEFAULT)
                 .intercept { chain ->
                     val value = chain.getArg(0) as? String ?: return@intercept chain.proceed()
                     chain.proceed(arrayOf(value))
@@ -56,6 +59,7 @@ class ModuleEntry : XposedModule() {
     private companion object {
         const val TAG = "ExampleModule"
         const val TARGET_PACKAGE = "com.example.target"
+        const val TARGET_PROCESS = "com.example.target"
     }
 }
 ```
@@ -82,5 +86,6 @@ util/
 - Hook Strategy 负责具体 Hook；
 - 使用 `AtomicBoolean` 或 key 防止重复安装；
 - 条件不满足必须回退原逻辑；
+- 默认使用 `ExceptionMode.DEFAULT`，由 `module.prop` 设置稳定异常模式；
 - 日志必须包含 event、package、process、reason；
 - 不要默认生成 system_server、SystemUI 或 native Hook。

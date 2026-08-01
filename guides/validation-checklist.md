@@ -6,7 +6,7 @@
 
 | 层级 | 目标 | 失败处理 |
 |---|---|---|
-| V1 静态输入 | 确认目标、版本、scope、API 和风险边界 | 信息不足时先提问，不生成最终 Hook |
+| V1 静态输入 | 记录目标、版本、scope、API、分析目标和已知证据 | 缺失字段标为待验证，同时给出静态定位或最小观测步骤 |
 | V2 工程配置 | 确认 Gradle、依赖、metadata 和入口文件 | 先修配置，不排查 Hook 逻辑 |
 | V3 APK 内容 | 确认 `META-INF/xposed` 和 native 文件被打包 | 缺文件时重新配置打包 |
 | V4 运行日志 | 确认模块加载、路由、Hook 安装和命中 | 按错误码定位失败层级 |
@@ -31,23 +31,25 @@ fallback=<失败回退方式>
 
 检查规则：
 
-- 缺少包名、进程、类名或方法签名时，不生成最终 Hook；
-- `system`、`android`、`com.android.systemui` 或 system_server 相关需求必须先读 `guides/special-boundaries.md`；
-- Native Hook 必须确认 so、ABI、符号、函数签名和回退策略；
-- Hot Reload 必须确认 HookHandle、状态清理和 reload 失败路径；
-- Remote Preferences 必须确认默认值、类型和值域。
+- 缺少包名、进程、类名或方法签名时，先列出候选目标、静态定位命令或最小观测 Hook；
+- `system`、`android`、`com.android.systemui` 或 system_server 相关需求读取 `guides/special-boundaries.md`，同时继续输出已有证据能支持的分析步骤；
+- Native Hook 需要记录 so、ABI、符号、函数签名和回退策略；缺失时先做 JNI/加载顺序/ABI 观测；
+- Hot Reload 记录 HookHandle、状态清理和 reload 失败路径；
+- Remote Preferences 记录默认值、类型和值域。
 
 ## V2 工程配置检查
 
-必须确认：
+建议核对：
 
 ```text
 compileOnly io.github.libxposed:api:102.0.0
 需要模块 App 与框架通信时使用 implementation io.github.libxposed:service:102.0.0
 minApiVersion / targetApiVersion 与 module.prop 一致
-java_init.list 指向唯一入口类
-scope.list 只包含必要包名
+exceptionMode 为 protective 或 passthrough
+java_init.list 指向至少一个入口类
+scope.list 与目标进程路由一致
 入口类继承 XposedModule
+android:label / android:description 已配置
 ```
 
 常见失败：
@@ -152,7 +154,7 @@ scope 是否最小：是 / 否
 是否包含 module.prop、java_init.list、scope.list：是 / 否
 是否包含结构化日志：是 / 否
 是否包含错误码：是 / 否
-是否使用 ExceptionMode.PROTECTIVE：是 / 否
+是否使用 `ExceptionMode.DEFAULT`：是 / 否（module.prop 是否配置 protective / passthrough）
 是否有失败回退：是 / 否
 是否有排错步骤：是 / 否
 是否涉及 SystemUI/system_server/native：是 / 否；若是，是否已确认边界

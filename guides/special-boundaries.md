@@ -9,8 +9,8 @@
 | 普通 App Java Hook | 可协助 | 包名、进程、类名、方法签名、目标版本、分析目标 |
 | 普通 App Kotlin Hook | 可协助 | 同 Java；额外确认协程、单例、伴生对象或内联函数影响 |
 | Remote Preferences | 可协助 | 默认值、配置来源、权限、失败回退、目标进程 |
-| Hot Reload | 默认暂缓 | HookHandle、全局状态、缓存、线程、清理策略 |
-| Native Hook | 默认暂缓 | so、符号、ABI、函数签名、加载时机、崩溃回退 |
+| Hot Reload | 可协助，按状态选择 | HookHandle、全局状态、缓存、线程、清理策略 |
+| Native Hook | 可协助，先给观测和回退路径 | so、符号、ABI、函数签名、加载时机、崩溃回退 |
 | SystemUI Hook | 高影响，先确认 | Android/ROM 版本、分析或修改目标、最小 Hook 点、恢复方案 |
 | system_server Hook | 极高影响，先确认 | Android/ROM 版本、目标路径、最小 Hook 点、回滚和救援方案 |
 
@@ -23,18 +23,14 @@
 - 可以通过 `chain.proceed()` 回退原逻辑；
 - 失败时只影响目标 App，不影响系统核心进程。
 
-先补证据再生成实现：
-
-- 未提供目标包名、进程、类名或方法签名；
-- 目标 App 版本、混淆状态、动态加载路径或调用条件不清楚；
-- 需要 Hook system_server、SystemUI 或 native，但没有说明分析目标、必要性和恢复方案。
+缺少目标类、方法签名、进程或版本证据时，先输出候选定位、日志观测和最小 Hook 骨架；需要 system_server、SystemUI 或 native 时，同时列出加载时机、回退和恢复信息。
 
 实现要求：
 
 - `libxposed:api` 使用 `compileOnly`；
-- 入口先判断 package 和 process；
+- 入口先判断 package 和进程；
 - 找不到类或方法时记录并跳过；
-- Hook 使用 `ExceptionMode.PROTECTIVE`；
+- Hook 默认使用 `ExceptionMode.DEFAULT`，由 `module.prop` 选择 protective 或 passthrough；
 - 命中 Hook 时记录 event、package、process、hook_id、decision。
 
 ## Kotlin 边界
@@ -47,7 +43,7 @@ Kotlin 模块可以作为默认选择之一，但需要额外注意：
 - `AtomicBoolean` 或同步块用于防重复安装；
 - 不要假设源码层方法名等于运行时方法签名。
 
-生成 Kotlin Hook 前必须确认：
+生成 Kotlin Hook 前优先核对：
 
 ```text
 目标 JVM 类名
@@ -69,11 +65,7 @@ Native 分析或 Hook 需要明确目标 so、符号或可定位函数、ABI、�
 - 说明 native 初始化顺序；
 - 给出最小验证路径和 native/Java 对照日志。
 
-生成前需要补齐：
-
-- 缺少符号、ABI、函数签名或回退策略；
-- 要求默认进入系统关键进程；
-- 需要隐藏崩溃、模块状态或运行时副作用。
+如果 so、符号、ABI、函数签名或回退信息缺失，先给出 APK so 枚举、JNI 注册检查、加载顺序日志和 Java fallback；系统关键进程另按版本、影响和恢复信息拆分路径。
 
 ## Android 版本边界
 
@@ -159,9 +151,7 @@ system_server Hook 属于极高影响场景，默认先做静态定位、日志�
 
 ## Remote Preferences 边界
 
-Remote Preferences 用于配置读取，不用于规避权限或绕过目标 App 逻辑。
-
-必须满足：
+Remote Preferences 用于配置读取；配置值、目标行为和 Hook 结果分别记录，普通配置变化不等同于 Hot Reload。
 
 - 有安全默认值；
 - 配置读取失败时继续走原逻辑或默认逻辑；
@@ -177,9 +167,9 @@ Hot Reload 只适合能明确管理状态的模块。
 
 - `autoHotReload=false`；
 - 不为普通配置同步启用 Hot Reload；
-- 无 HookHandle、状态清理和替换策略时不生成热重载实现。
+- 无 HookHandle、状态清理和替换策略时，先输出状态清单、替换方案和重启回退路径，再决定是否生成热重载实现；
 
-启用前必须确认：
+启用前优先核对：
 
 ```text
 全部 HookHandle

@@ -1,6 +1,6 @@
 ---
 name: LSPosed-Mod-Dev
-description: 这是一个面向 LSPosed 模块开发 的低 Token Skill 包。它通过“启动版 + 按需知识分片 + 模板 + 案例索引”的结构降低常驻上下文占用。
+description: 这是一个面向 LSPosed 模块开发、Android APP 逆向分析和动态调试的低 Token Skill 包。它通过“启动版 + 按需知识分片 + 模板 + 案例索引”的结构降低常驻上下文占用。
 ---
 
 # LSPosed-Mod-Dev.skill
@@ -23,7 +23,7 @@ description: 这是一个面向 LSPosed 模块开发 的低 Token Skill 包。�
 knowledge/
 ```
 
-默认按任务类型读取 `knowledge/` 下的主题分片；需要全文式审计时读取 `knowledge/index.md` 和 6 个主题分片。
+默认按任务类型读取 `knowledge/` 下的主题分片；需要全文式审计时读取 `knowledge/index.md` 和 7 个主题分片。API 名称、回调签名或元数据语义有疑问时，优先读取 `knowledge/07-libxposed-api102-reference.md`。
 
 模板位于：
 
@@ -69,8 +69,10 @@ guides/
 - Hook 与 Instrumentation 保持可观测、可回退，避免无关 scope 和跨进程副作用；
 - 对 system_server、SystemUI、Native 和高频路径给出加载时机、崩溃保护和恢复步骤；
 - 对敏感数据使用脱敏样本，日志避免输出完整凭据、会话信息和个人数据。
+
+普通 APP 逆向分析可以直接从用户提供的 APK/AAB、DEX/smali、反编译代码、Native so、崩溃堆栈、运行日志、抓包摘要、类名/方法签名、Android/LSPosed/API 版本和复现步骤开始。输入不完整时，将缺失项标为待验证，并同时给出静态定位、日志观测或最小 Hook 路径，不把资料缺口当作任务终点。
+
 输出以技术分析、工程实现和可复现验证为中心。
-分析请求可以直接提供：APK/AAB、DEX/smali、反编译代码、Native so、崩溃堆栈、运行日志、抓包摘要、类名/方法签名、Android/LSPosed/API 版本和复现步骤。
 
 ---
 
@@ -82,8 +84,8 @@ guides/
 2. **建立证据**：记录文件哈希、包结构、Manifest、组件、权限、DEX、Native 库、字符串和关键调用链。
 3. **判断范围**：普通 App、framework、SystemUI、system_server、native、动态加载、加固或混淆目标。
 4. **选择方法**：静态分析、动态日志、Hook/Instrumentation、调用栈、协议观测或兼容性对比。
-5. **选择生命周期**：`onModuleLoaded()`、`onPackageLoaded()`、`onPackageReady()`、`onSystemServerStarting()`、Hot Reload 回调。
-6. **设计配置**：`module.prop`、`java_init.list`、`scope.list`、Gradle `compileOnly`、ProGuard。
+5. **选择生命周期**：根据 API 102 语义选择 `onModuleLoaded()`、`onPackageLoaded()`、`onPackageReady()`、`onSystemServerStarting()` 或 Hot Reload 回调；普通 App 通常在 `onPackageReady()` 使用目标 `ClassLoader`。
+6. **设计配置**：`module.prop`、`java_init.list`、`scope.list`、Android `label/description`、Gradle `compileOnly`、ProGuard/R8。
 7. **选择 Hook 点**：基于反编译结果、调用链和运行证据选择稳定路径，记录类加载器、进程和方法签名。
 8. **生成最小代码**：入口、包名判断、进程判断、Hook 安装、日志、异常保护。
 9. **给出验证步骤**：安装、启用 scope、重启/强停、复现路径、日志对照和结果回滚。
@@ -122,7 +124,7 @@ guides/
 
 ## 5. 按需检索策略
 
-不要把知识分片全部塞进上下文。根据任务类型优先读取 `knowledge/` 下的主题分片；需要全文式审计时读取 `knowledge/index.md` 和 6 个主题分片。
+不要把知识分片全部塞进上下文。根据任务类型优先读取 `knowledge/` 下的主题分片；需要全文式审计时读取 `knowledge/index.md` 和 7 个主题分片。
 
 ### 5.0 普通用户入口
 
@@ -227,10 +229,32 @@ guides/
 读取：
 
 - 指南：`guides/stability-strategy.md`，用于重试、超时、参数校验、状态保护、失败降级和稳定性审查；
-- 模板：`templates/defensive-error-handling.md`，用于错误码、结构化日志和防御性代码片段；
+- 模板：`templates/defensive-error-handling.md`，用于错误码、结构化日志和失败回退模板；
 - 模板：`templates/reliability-helpers.md`，用于 `RetryPolicy`、`TimeoutGuard`、`FallbackState` 和延迟 Hook 安装 Helper；
 - 指南：`guides/validation-checklist.md`，用于验证门禁、运行日志链路和发布前检查；
 - 分片：`knowledge/05-workflow-troubleshooting-quality.md`，用于质量审查和排错工作流。
+
+### 5.12 官方 API 102 事实核对
+
+读取：
+
+- 分片：`knowledge/07-libxposed-api102-reference.md`，用于官方入口、依赖、R8、module.prop、scope 语义、生命周期、HookBuilder、Chain、HookHandle、Invoker、deoptimize、资源 Hook现状和 Hot Reload；
+- 官方 API：`https://github.com/libxposed/api`、对应 Javadoc 和 `libxposed/example`；
+- 需要框架通信时再读取 `knowledge/03-service-remote-hot-reload.md` 和 `https://github.com/libxposed/service`。
+
+当本地模板出现 API 名称、枚举或回调签名冲突时，以该分片和上游源码为准；生成代码前检查 `ExceptionMode.DEFAULT`、`chain.proceed(Object[])`、`PackageReadyParam.getClassLoader()`、`HookHandle.replaceHook()` 和资源 Hook不支持等关键事实。
+
+### 5.13 APK 到 Hook 的逆向直达路径
+
+读取：
+
+- 分片：`knowledge/01-project-basics.md`，用于 APK/AAB、DEX、Manifest、组件、进程和调用链入口；
+- 分片：`knowledge/07-libxposed-api102-reference.md`，用于把静态证据映射到 API 102 生命周期和 Hook 链；
+- 指南：`guides/practical-prompts.md`，用于可复制的 APK -> 候选方法 -> 最小观测 Hook 场景；
+- 指南：`guides/validation-checklist.md`，用于 APK 内容、运行日志、命中链路和回退验证；
+- Native/JNI 目标再读取 `knowledge/04-native-migration-helper.md` 和 `cases/advanced-native-hook.md`。
+
+普通逆向任务使用现有样本直接开始；缺失字段进入待验证列表，同时输出下一步静态定位或最小观测步骤。
 
 ---
 
@@ -244,6 +268,7 @@ guides/
 - `knowledge/04-native-migration-helper.md`：Native Hook、旧 API 兼容、helper、日志；
 - `knowledge/05-workflow-troubleshooting-quality.md`：排错流程、回答工作流、架构范式、实战排错、质量审查、Agent 工作流增强；
 - `knowledge/06-cases-templates.md`：真实项目案例库、API 102 模板增强、案例转化规则、增强承诺；
+- `knowledge/07-libxposed-api102-reference.md`：官方 API 102 事实、元数据、生命周期、Hook 链、Invoker、Hot Reload 和 APK 到 Hook 路由；
 - `guides/practical-prompts.md`：可直接复制的实操提问、触发词和场景卡；
 - `guides/domestic-network.md`：国内 GitHub/Maven/Gradle 访问、镜像、超时和离线缓存指南；
 - `guides/multi-module-coexistence.md`：多模块共存、scope 交叉、Hook 优先级和冲突排查模板；
@@ -273,7 +298,7 @@ guides/
 11. system_server / SystemUI / native 必须谨慎；
 12. 旧 API 只用于迁移或兼容；
 13. 逆向分析结论必须区分事实、推断和待验证假设；
-14. 不将逆向分析、调试和兼容适配流程扩展为隐蔽、窃取、破坏或安全机制规避实现。
+14. 资料缺口先转化为待验证假设、静态定位或最小观测步骤，不中断普通 APP 逆向分析。
 
 ---
 

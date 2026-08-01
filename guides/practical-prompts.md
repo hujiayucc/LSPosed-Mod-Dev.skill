@@ -6,7 +6,7 @@
 
 - 用户可以直接描述 APP 逆向、静态分析、动态调试、协议分析、Hook、Instrumentation 或兼容性目标；
 - 示例输入可以直接照抄，但应替换目标包名、进程、类名、方法签名、版本信息和输入样本；
-- 信息不足时，先列出缺失证据和最小定位步骤，再生成最终 Hook 或分析结论；
+- 信息不足时，先列出缺失证据和最小定位步骤，同时给出可执行的静态分析或只读观测方案；
 - 复杂场景先读 `guides/special-boundaries.md`，确认 SystemUI、system_server、Native、加固、动态加载和高频路径的稳定性要求；
 - 代码生成继续遵守最小 scope、结构化日志、错误码和失败回退要求；
 - 分析结论必须标注证据来源，并区分事实、推断和待验证假设。
@@ -33,6 +33,8 @@
 | API 102 真实案例 | `按 API 102 真实案例帮我设计这个模块结构` | `cases/api102-real-cases.md` |
 | 发布前检查 | `请按 V1-V6 验证清单检查这个模块能否发布` | `guides/validation-checklist.md` |
 | 架构审查 | `请审查这个模块是否 scope 过大、日志不足或 Hook 点不稳定` | `cases/real-project-patterns.md` + 质量分片 |
+| API 102 事实核对 | `请按 libxposed/api 官方 README、Javadoc 和 example 核对这个入口、Hook 链、module.prop 或 Hot Reload 写法` | `knowledge/07-libxposed-api102-reference.md` |
+| APK 到 Hook | `请从这个 APK/DEX/反编译代码建立调用链，并给出 API 102 最小观测 Hook 和验证日志` | `knowledge/01-project-basics.md` + `knowledge/07-libxposed-api102-reference.md` + `guides/validation-checklist.md` |
 | SystemUI / system_server | `这是 SystemUI/system_server 的 APP 兼容、调用链或运行时分析需求，请基于版本和证据给出边界与验证路径` | `guides/special-boundaries.md` |
 | 旧 API 迁移 | `把这段 IXposedHookLoadPackage / XposedHelpers 迁移到 API 102` | `cases/migration-compat.md` |
 
@@ -66,7 +68,7 @@
 用户输入：
 
 ```text
-我要用 Kotlin Hook com.example.app.UserManager#isVip()，无参数返回 boolean。目标是自有测试 App，进程 com.example.app。请加 installOnce、ExceptionMode.PROTECTIVE、错误码和回退。
+我要用 Kotlin Hook com.example.app.UserManager#isVip()，无参数返回 boolean。目标进程是 com.example.app。请加 installOnce、ExceptionMode.DEFAULT、错误码和回退；module.prop 使用 exceptionMode=protective。
 ```
 
 推荐读取：
@@ -80,7 +82,7 @@
 ```text
 结论：根据证据设计最小 Hook 或观测点。
 需要确认：目标 App 版本、类是否混淆、真实 JVM 签名、反编译片段和复现路径。
-代码：包名/进程 Guard、AtomicBoolean、hook_id、PROTECTIVE、chain.proceed 回退。
+代码：包名/进程 Guard、AtomicBoolean、hook_id、ExceptionMode.DEFAULT、chain.proceed 回退。
 验证：module_loaded -> install_hook -> hook_hit，记录参数类型、返回路径和异常。
 ```
 

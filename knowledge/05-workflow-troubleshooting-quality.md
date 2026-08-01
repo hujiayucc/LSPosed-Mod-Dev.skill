@@ -42,7 +42,7 @@ ClassLoader 检查：是否使用 `param.getClassLoader()`；是否误用模块�
 
 Hook 触发检查：Hook 是否安装成功；目标方法是否真的被调用；是否 Hook 错重载；类是否已经初始化；是否需要 `hookClassInitializer()`；是否被 inline；必要时才考虑 `deoptimize()`。
 
-异常检查：`ExceptionMode.PROTECTIVE` 是否隐藏了 Hooker 异常；是否应临时改 `PASSTHROUGH`；是否 `chain.proceed()` 抛出目标异常；是否类型转换、参数数组或返回值类型错误。
+异常检查：`ExceptionMode.DEFAULT` 是否按 `module.prop` 的 `exceptionMode` 配置运行；调试时是否临时改为 `PASSTHROUGH`；是否 `chain.proceed()` 抛出目标异常；是否类型转换、参数数组或返回值类型错误。
 
 ## 回答用户的标准流程
 

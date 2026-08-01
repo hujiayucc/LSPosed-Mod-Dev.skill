@@ -229,7 +229,7 @@ hook(method)
 
 ### 问题
 
-目标类可能存在重载方法。只写方法名会让定位不稳定，或者 Hook 到并非实际调用路径的方法。必须确认参数类型和返回值。
+目标类可能存在重载方法。只写方法名会让定位不稳定，或者 Hook 到并非实际调用路径的方法。优先确认参数类型和返回值；信息缺失时先列出候选重载和定位步骤。
 
 ### 修复后
 
@@ -239,7 +239,7 @@ method.setAccessible(true);
 
 hook(method)
         .setId("set_enabled_hook")
-        .setExceptionMode(XposedInterface.ExceptionMode.PROTECTIVE)
+        .setExceptionMode(XposedInterface.ExceptionMode.DEFAULT)
         .intercept(chain -> {
             log("LSM-HOOK-003", "hook_hit", "setEnabled", "boolean", "ok");
             return chain.proceed();
@@ -447,7 +447,7 @@ public void onPackageReady(XposedModuleInterface.PackageReadyParam param) {
 
 ### 问题
 
-Native 分支加载失败不应阻断 Java 分支。Native Hook 必须确认 ABI、so 打包、符号和加载时机；失败时禁用 native 分支并保留 Java 分支。
+Native 分支加载失败不应阻断 Java 分支。Native Hook 应记录 ABI、so 打包、符号和加载时机；信息缺失时先输出检查与观测步骤，失败时禁用 native 分支并保留 Java 分支。
 
 ### 修复后
 

@@ -57,7 +57,7 @@ LSM-<DOMAIN>-<NNN>
 | LSM-HR-001 | warn | Hot Reload 状态不完整 | 保持 `autoHotReload=false` 或要求重启目标进程 |
 | LSM-NATIVE-001 | warn | so、ABI 或符号缺失 | 禁用 native 分支 |
 | LSM-API-001 | warn | API 版本低于模板要求 | 降级到兼容路径或停止生成 |
-| LSM-BOUNDARY-001 | error | system_server、SystemUI 或 native 高风险条件不足 | 暂缓或拒绝实现 |
+| LSM-BOUNDARY-001 | error | system_server、SystemUI 或 native 路径缺少版本/回退信息 | 先输出静态定位、最小观测和恢复步骤 |
 | LSM-VALIDATE-001 | error | APK 缺少 `META-INF/xposed` 必要文件 | 修复打包配置后再测试 |
 
 ## 日志字段
@@ -121,7 +121,7 @@ private synchronized void installTargetHook(ClassLoader classLoader, String pack
 
         hook(method)
                 .setId("target_method_hook")
-                .setExceptionMode(XposedInterface.ExceptionMode.PROTECTIVE)
+                .setExceptionMode(XposedInterface.ExceptionMode.DEFAULT)
                 .intercept(chain -> {
                     Object arg0 = chain.getArg(0);
                     if (!(arg0 instanceof String)) {
@@ -191,7 +191,7 @@ private fun installTargetHook(classLoader: ClassLoader, packageName: String, pro
 
         hook(method)
             .setId("target_method_hook")
-            .setExceptionMode(XposedInterface.ExceptionMode.PROTECTIVE)
+            .setExceptionMode(XposedInterface.ExceptionMode.DEFAULT)
             .intercept { chain ->
                 val value = chain.getArg(0) as? String
                     ?: return@intercept chain.proceed()
@@ -234,7 +234,7 @@ scope 是否最小
 ```text
 结论：可以生成 / 信息不足 / 暂缓高风险能力
 使用错误码：列出本次会用到的 LSM-... 代码
-防御策略：包名/进程 Guard、签名校验、ExceptionMode.PROTECTIVE、失败回退
+防御策略：包名/进程 Guard、签名校验、ExceptionMode.DEFAULT（由 module.prop 配置 protective/passthrough）、失败回退
 代码位置：入口类、Hook Strategy、ConfigStore、Logger
 验证：APK 内容、scope、module_loaded、install_hook、hook_hit、fallback 日志
 风险：哪些条件下跳过 Hook，哪些条件下需要用户补充信息
@@ -247,3 +247,118 @@ scope 是否最小
 - 稳定性策略：读 `guides/stability-strategy.md`。
 - 自动化验证或发布前检查：读 `guides/validation-checklist.md`。
 - 特殊高风险场景：先读 `guides/special-boundaries.md`。
+
+## 快速诊断决策树
+
+遇到模块问题时，按以下顺序快速定位：
+
+```text
+1. 模块是否加载？
+   ├─ 否 → 检查 LSM-LOAD-001/002：module.prop、java_init.list、scope.list
+   └─ 是 → 继续
+
+2. Hook 是否安装？
+   ├─ 否 → 检查 LSM-CL-001/LSM-SIG-001：类/方法是否存在
+   └─ 是 → 继续
+
+3. Hook 是否触发？
+   ├─ 否 → 检查 LSM-SCOPE-001：包名/进程是否匹配
+   └─ 是 → 继续
+
+4. Hook 逻辑是否正确？
+   ├─ 否 → 检查 LSM-HOOK-004：参数类型、返回值、异常
+   └─ 是 → 检查业务逻辑
+
+5. 配置是否生效？
+   └─ 检查 LSM-CFG-001/002：Remote Preferences 可用性、值合法性
+```
+
+### 常见错误码速查
+
+| 错误码 | 快速判断 | 立即操作 |
+|---|---|---|
+| LSM-LOAD-002 | module.prop 或入口类配置错误 | 检查 APK 中 META-INF/xposed/ 文件 |
+| LSM-SCOPE-001 | 包名/进程不匹配 | 确认 scope.list 和目标 App 包名 |
+| LSM-HOOK-003 | Hook 安装失败 | 查看异常栈，检查类/方法签名 |
+| LSM-CL-001 | 类不存在 | 确认 ClassLoader 和 Hook 时机 |
+| LSM-SIG-001 | 方法签名不匹配 | 反编译确认实际签名 |
+| LSM-CFG-001 | 配置不可用 | 检查 Remote Preferences 是否初始化 |
+| LSM-NATIVE-001 | Native Hook 失败 | 检查 ABI、so 和符号 |
+
+### 一键验证脚本
+
+生成模块后，使用此脚本快速验证：
+
+```bash
+#!/bin/bash
+# verify-module.sh
+
+APK="$1"
+if [[ ! -f "$APK" ]]; then
+    echo "用法: $0 <module.apk>"
+    exit 1
+fi
+
+echo "=== 模块验证 ==="
+echo ""
+
+echo "1. 检查 module.prop..."
+unzip -p "$APK" META-INF/xposed/module.prop && echo "✓ module.prop 存在" || echo "✗ module.prop 缺失"
+echo ""
+
+echo "2. 检查 java_init.list..."
+unzip -p "$APK" META-INF/xposed/java_init.list && echo "✓ java_init.list 存在" || echo "✗ java_init.list 缺失"
+echo ""
+
+echo "3. 检查 scope.list..."
+unzip -p "$APK" META-INF/xposed/scope.list && echo "✓ scope.list 存在" || echo "✗ scope.list 缺失"
+echo ""
+
+echo "4. 检查 classes.dex..."
+unzip -l "$APK" | grep "classes.*\.dex" && echo "✓ DEX 文件存在" || echo "✗ DEX 文件缺失"
+echo ""
+
+echo "5. 检查 libxposed API（不应打包）..."
+unzip -l "$APK" | grep "io/github/libxposed/api" && echo "✗ 警告：API 被打包了（应使用 compileOnly）" || echo "✓ API 未打包"
+echo ""
+
+echo "=== 验证完成 ==="
+```
+
+### 日志模板生成器
+
+快速生成标准化日志代码：
+
+```java
+// Java 日志模板
+private static void logInfo(String event, String packageName, String processName, String result) {
+    String msg = String.format("event=%s package=%s process=%s result=%s", 
+        event, packageName, processName, result);
+    Log.i(TAG, msg);
+}
+
+private static void logError(String code, String event, String reason, String recover, Throwable t) {
+    String msg = String.format("code=%s event=%s reason=%s recover=%s", 
+        code, event, reason, recover);
+    Log.e(TAG, msg, t);
+}
+
+// 使用示例
+logInfo("install_hook", packageName, processName, "ok");
+logError("LSM-HOOK-003", "install_hook", "unexpected_error", "disable_hook", t);
+```
+
+```kotlin
+// Kotlin 日志模板
+private fun logInfo(event: String, packageName: String, processName: String, result: String) {
+    Log.i(TAG, "event=$event package=$packageName process=$processName result=$result")
+}
+
+private fun logError(code: String, event: String, reason: String, recover: String, t: Throwable? = null) {
+    Log.e(TAG, "code=$code event=$event reason=$reason recover=$recover", t)
+}
+
+// 使用示例
+logInfo("install_hook", packageName, processName, "ok")
+logError("LSM-HOOK-003", "install_hook", "unexpected_error", "disable_hook", t)
+```

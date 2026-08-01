@@ -4,9 +4,9 @@
 
 本示例面向 APP 静态分析、动态调试、兼容性定位和 LSPosed Native Hook 工程。涉及系统稳定性、数据处理或高影响路径时，必须保留版本记录、最小 scope、崩溃保护、日志脱敏和回滚方案。
 
-## 前置条件
+## 前置信息与观测路径
 
-生成真实 Native Hook 前必须确认：
+生成真实 Native Hook 前优先记录以下信息；字段缺失时进入待验证列表，并先生成静态定位、Java 层观测或 Native 加载检查：
 
 ```text
 analysis_scope=<分析范围或测试环境>
@@ -20,7 +20,7 @@ fallback=<native 失败时 Java 分支如何继续>
 crash_plan=<native crash 日志或 tombstone 获取方式>
 ```
 
-缺任一项时，不生成最终 Hook，只给定位步骤和验证清单。
+缺关键项时，先输出候选 so 枚举、符号定位、JNI 注册观测或 Java 层最小 Hook，再根据实际结果决定是否扩展为 Native Hook。
 
 ## 文件结构
 

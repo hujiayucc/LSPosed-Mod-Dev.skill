@@ -48,6 +48,7 @@ https://github.com/libxposed/helper
 | `knowledge/04-native-migration-helper.md` | Native Hook、旧 API 迁移、helper、日志规范 | Native、迁移或复杂查找时读取 |
 | `knowledge/05-workflow-troubleshooting-quality.md` | 工作流、排错、架构范式和质量审查 | 排错、审查、稳定性分析时读取 |
 | `knowledge/06-cases-templates.md` | 真实案例提炼、API 102 模板增强和案例转化规则 | 案例学习、架构设计或模板增强时读取 |
+| `knowledge/07-libxposed-api102-reference.md` | 官方 API 102 依赖、元数据、生命周期、Hook 链和 APK-to-Hook 路由 | 核对 API 名称、回调签名、模块元数据或由静态证据生成 Hook 时读取 |
 | `templates/java-api102.md` | Java API 102 模板 | 生成 Java 模块时读取 |
 | `templates/kotlin-api102.md` | Kotlin API 102 模板 | 生成 Kotlin 模块时读取 |
 | `templates/defensive-error-handling.md` | 防御性代码、错误码、结构化日志和失败回退模板 | 生成复杂 Hook、排错或稳定性审查时读取 |
@@ -93,7 +94,7 @@ guides/
 cases/
 ```
 
-默认检索 `knowledge/` 分片；需要全文式审计时读取 `knowledge/index.md` 和 6 个主题分片。
+默认检索 `knowledge/` 分片；需要全文式审计时读取 `knowledge/index.md` 和 7 个主题分片。
 
 ### 3. 检索优先级
 
@@ -110,24 +111,26 @@ cases/
 | 用户任务 | 推荐读取 |
 |---|---|
 | APP 逆向入门 | `SKILL.md` + `knowledge/index.md` + `guides/practical-prompts.md` |
-| APK / AAB 静态分析 | `SKILL.md` + `knowledge/01-project-basics.md` + `guides/validation-checklist.md` |
+| APK / AAB 静态分析 | `SKILL.md` + `knowledge/01-project-basics.md` + `knowledge/07-libxposed-api102-reference.md` + `guides/validation-checklist.md` |
+| APK 到最小观测 Hook | `SKILL.md` + `knowledge/01-project-basics.md` + `knowledge/07-libxposed-api102-reference.md` + `guides/practical-prompts.md` |
 | 国内网络 / GitHub / Maven 访问慢 | `guides/domestic-network.md` + `templates/module-files.md` + `guides/validation-checklist.md` |
 | DEX / smali / 反编译代码定位 | `knowledge/01-project-basics.md` + `knowledge/02-hook-api.md` + `cases/real-project-patterns.md` |
-| 动态调试 / Hook / Instrumentation | `knowledge/02-hook-api.md` + `guides/troubleshooting-cards.md` + Java/Kotlin 模板 |
-| Native / JNI / so 分析 | `knowledge/04-native-migration-helper.md` + `cases/advanced-native-hook.md` + `guides/advanced-combinations.md` |
+| 动态调试 / Hook / Instrumentation | `knowledge/02-hook-api.md` + `knowledge/07-libxposed-api102-reference.md` + `guides/troubleshooting-cards.md` + Java/Kotlin 模板 |
+| Native / JNI / so 分析 | `knowledge/04-native-migration-helper.md` + `knowledge/07-libxposed-api102-reference.md` + `cases/advanced-native-hook.md` + `guides/advanced-combinations.md` |
 | 协议、IPC、配置和行为分析 | `knowledge/03-service-remote-hot-reload.md` + `guides/validation-checklist.md` |
-| 新建 LSPosed 模块 | `SKILL.md` + `knowledge/01-project-basics.md` + `templates/module-files.md` + Java/Kotlin 模板 |
-| 写 Hook 代码 | `SKILL.md` + `knowledge/02-hook-api.md` + Java/Kotlin 模板；复杂场景加 `templates/defensive-error-handling.md` |
+| 新建 LSPosed 模块 | `SKILL.md` + `knowledge/01-project-basics.md` + `knowledge/07-libxposed-api102-reference.md` + `templates/module-files.md` + Java/Kotlin 模板 |
+| 写 Hook 代码 | `SKILL.md` + `knowledge/02-hook-api.md` + `knowledge/07-libxposed-api102-reference.md` + Java/Kotlin 模板；复杂场景加 `templates/defensive-error-handling.md` |
+| 官方 API 102 名称、枚举、回调或元数据核对 | `knowledge/07-libxposed-api102-reference.md` + 上游 README/Javadoc/example |
 | Remote Preferences | `knowledge/03-service-remote-hot-reload.md` |
 | Hot Reload | `knowledge/03-service-remote-hot-reload.md` + `guides/stability-strategy.md` |
-| Native Hook | `knowledge/04-native-migration-helper.md` + `guides/advanced-combinations.md` + `cases/advanced-native-hook.md` |
+| Native Hook | `knowledge/04-native-migration-helper.md` + `knowledge/07-libxposed-api102-reference.md` + `guides/advanced-combinations.md` + `cases/advanced-native-hook.md` |
 | 多模块共存 / Hook 冲突 | `guides/multi-module-coexistence.md` + `guides/advanced-combinations.md` + `guides/validation-checklist.md` |
 | 旧模块迁移 | `cases/migration-compat.md` + `knowledge/04-native-migration-helper.md` |
 | 模块不生效 | `guides/troubleshooting-cards.md` + `guides/validation-checklist.md` + `knowledge/05-workflow-troubleshooting-quality.md` + `cases/failure-fix-walkthroughs.md` + `cases/real-project-patterns.md` |
 | 高频问题 / 反模式判断 | `guides/faq-anti-patterns.md` |
 | 需要交互样例或回答结构 | `guides/interaction-examples.md` + `guides/practical-prompts.md` |
 | 错误代码修复前后对比 | `cases/failure-fix-walkthroughs.md` + `guides/troubleshooting-cards.md` + `templates/defensive-error-handling.md` |
-| API 102 真实案例 | `cases/api102-real-cases.md` + `knowledge/06-cases-templates.md` |
+| API 102 真实案例 | `knowledge/07-libxposed-api102-reference.md` + `cases/api102-real-cases.md` + `knowledge/06-cases-templates.md` |
 | 复杂场景组合 | `guides/advanced-combinations.md` + `cases/api102-real-cases.md` + 对应知识分片或模板 |
 | 稳定性审查 / 降级策略 | `guides/stability-strategy.md` + `templates/defensive-error-handling.md` + `templates/reliability-helpers.md` + `guides/validation-checklist.md` + `knowledge/05-workflow-troubleshooting-quality.md` |
 | 错误码 / 防御性代码 | `templates/defensive-error-handling.md` + `templates/reliability-helpers.md` + Java/Kotlin 模板 + `guides/stability-strategy.md` |

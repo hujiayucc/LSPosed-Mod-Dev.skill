@@ -18,7 +18,16 @@ dependencies {
 }
 ```
 
-如果使用本地 stub：
+如果模块 App 需要与框架通信：
+
+```kotlin
+dependencies {
+    implementation("io.github.libxposed:service:102.0.0")
+}
+```
+`service` 只在需要 Remote Preferences、Remote Files、scope 查询或 Hot Reload 时加入。
+
+如果使用本地 API stub：
 
 ```kotlin
 dependencies {
@@ -47,7 +56,12 @@ exceptionMode=protective
 autoHotReload=false
 ```
 
-说明：官方 `libxposed/example` 为演示热重载默认使用 `autoHotReload=true`。本模板默认关闭，是为了避免未实现 `onHotReloading()` 清理逻辑时在更新后自动重载；只有完整处理旧 Hook、线程、JNI/native 资源和 `onHotReloaded()` 替换逻辑后，才建议改为 `true`。
+说明：
+
+- `minApiVersion` 和 `targetApiVersion` 是必填字段；只使用 API 102 且不兼容 101 时可将两者都设为 `102`；
+- `staticScope` 表示 scope 是否固定；
+- `exceptionMode` 只接受 `protective` 或 `passthrough`，Java Hook 侧使用 `ExceptionMode.DEFAULT` 跟随该配置；
+- `autoHotReload` 是 API 102+ 选项；只有实现 `onHotReloading()` / `onHotReloaded()`、旧 Hook 清理和替换后再打开。
 
 只面向 API 102：
 
@@ -58,6 +72,17 @@ staticScope=true
 exceptionMode=protective
 autoHotReload=false
 ```
+
+模块名称与描述来自 AndroidManifest 的标准资源：
+
+```xml
+<application
+    android:label="@string/app_name"
+    android:description="@string/app_description">
+</application>
+```
+
+旧 `xposedmodule`、`xposeddescription` 和 `xposedminversion` 不作为新模块默认配置。
 
 ## java_init.list
 
@@ -104,14 +129,17 @@ com.example.target
 
 ## ProGuard / R8
 
-必须保证：
+官方 API README 的基础规则：
 
-- 入口类不被删除；
-- `java_init.list` 能匹配混淆后的入口类，或入口类不混淆；
-- `META-INF/xposed/module.prop` 保留；
-- `META-INF/xposed/java_init.list` 保留；
-- `META-INF/xposed/scope.list` 保留；
-- native 场景下 `native_init.list` 保留。
+```proguard
+-dontwarn io.github.libxposed.annotation.**
+-adaptresourcefilecontents META-INF/xposed/java_init.list
+-keep,allowoptimization,allowobfuscation public class * extends io.github.libxposed.api.XposedModule {
+    public <init>();
+}
+```
+
+这些规则用于保留入口类和无参构造，并在入口类混淆时同步改写 `java_init.list`。同时确认 `module.prop`、`scope.list` 和 Native 场景下的 `native_init.list` 被打包。
 
 ## 验证 APK
 

@@ -18,11 +18,14 @@ import io.github.libxposed.api.XposedModuleInterface;
 public final class ModuleEntry extends XposedModule {
     private static final String TAG = "ExampleModule";
     private static final String TARGET_PACKAGE = "com.example.target";
+    private static final String TARGET_PROCESS = "com.example.target";
+    private volatile String loadedProcess;
     private volatile boolean installed;
 
     @Override
     public void onModuleLoaded(@NonNull XposedModuleInterface.ModuleLoadedParam param) {
-        log(Log.INFO, TAG, "event=module_loaded process=" + param.getProcessName()
+        loadedProcess = param.getProcessName();
+        log(Log.INFO, TAG, "event=module_loaded process=" + loadedProcess
                 + " api=" + getApiVersion()
                 + " framework=" + getFrameworkName()
                 + " version=" + getFrameworkVersion());
@@ -30,7 +33,8 @@ public final class ModuleEntry extends XposedModule {
 
     @Override
     public void onPackageReady(@NonNull XposedModuleInterface.PackageReadyParam param) {
-        if (!TARGET_PACKAGE.equals(param.getPackageName()) || !param.isFirstPackage()) {
+        if (!TARGET_PACKAGE.equals(param.getPackageName())
+                || !TARGET_PROCESS.equals(loadedProcess)) {
             return;
         }
         installHooks(param.getClassLoader());
@@ -48,7 +52,7 @@ public final class ModuleEntry extends XposedModule {
 
             hook(method)
                     .setId("target_method_hook")
-                    .setExceptionMode(XposedInterface.ExceptionMode.PROTECTIVE)
+                    .setExceptionMode(XposedInterface.ExceptionMode.DEFAULT)
                     .intercept(chain -> {
                         Object arg0 = chain.getArg(0);
                         if (!(arg0 instanceof String)) {
@@ -85,9 +89,9 @@ public final class ModuleEntry extends XposedModule {
 ## 质量要求
 
 - 必须判断包名；
-- 必须判断 `isFirstPackage()` 或进程；
+- 普通 App 需要按 `ModuleLoadedParam.getProcessName()` 记录并判断目标进程；
 - 必须使用目标进程 `ClassLoader`；
-- 必须设置异常保护；
+- 默认使用 `ExceptionMode.DEFAULT`，由 `module.prop` 的 `exceptionMode=protective` 提供稳定默认值；
 - 条件不满足必须 `chain.proceed()`；
 - 不要默认 Hook system_server；
 - 不要把旧 `XposedHelpers` 作为默认写法。
