@@ -1,5 +1,5 @@
 ---
-name: LSPosed-Mod-Dev
+name: lsposed-mod-dev-hujiayucc
 description: 这是一个面向 LSPosed 模块开发、Android APP 逆向分析和动态调试的低 Token Skill 包。它通过“启动版 + 按需知识分片 + 模板 + 案例索引”的结构降低常驻上下文占用。
 ---
 
